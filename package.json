@@ -1,0 +1,17 @@
+{
+  "name": "api.mineweb.org",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "dependencies": {
+    "body-parser": "1.15.1",
+    "debug": "~2.2.0",
+    "express": "~4.13.4",
+    "morgan": "~1.7.0",
+    "node-rsa": "^0.4.1",
+    "sails-mysql": "^0.11.5",
+    "waterline": "^0.12.2"
+  }
+}

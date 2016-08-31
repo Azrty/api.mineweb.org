@@ -1,0 +1,44 @@
+module.exports = {
+  identity: 'Log',
+  connection: 'default',
+  
+  attributes: {
+    id : {
+			type: 'integer',
+			unique: true,
+    	autoIncrement: true,
+    	primaryKey: true,
+		},
+
+		action: {
+			type: 'string',
+			required: true,
+			in: ['GET_PLUGIN', 'UPDATE', 'KEY_VERIFY', 'ADD_TICKET', 'GET_SECRET_KEY', 'GET_PLUGIN', 'GET_THEME', 'LOGIN', 'DEBUG', 'TRY_LOGIN', 'LOGIN']
+		},
+
+		ip: {
+			type: 'string',
+			required: true,
+			ip: true
+		},
+
+		status: {
+			type: 'boolean',
+			required: true
+		},
+
+		error: {
+			type: 'string'
+		},
+
+		type: {
+			type: 'string',
+			required: true,
+			in: ['LICENSE', 'HOSTING', 'USER']
+		},
+
+		data: {
+			type: 'json'
+		}
+  },
+}

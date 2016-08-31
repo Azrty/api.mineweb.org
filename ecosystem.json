@@ -1,0 +1,39 @@
+{
+  "apps" : [
+    {
+      "name"      : "mineweb_api",
+      "script"    : "src/app.js",
+      "env": {
+        "logger": "dev",
+        "MYSQL_HOST": "status.hardfight.fr",
+        "MYSQL_USER": "mineweb",
+        "MYSQL_PWD": "mineweb42",
+        "MYSQL_DB": "mineweb",
+        "NODE_ENV": "development"
+      },
+      "env_production" : {
+        "logger": "prod",
+        "MYSQL_HOST": "status.hardfight.fr",
+        "MYSQL_USER": "mineweb",
+        "MYSQL_PWD": "mineweb42",
+        "MYSQL_DB": "mineweb",
+        "NODE_ENV": "production"
+      }
+    }
+  ],
+
+  /**
+   * Deployment section
+   * http://pm2.keymetrics.io/docs/usage/deployment/
+   */
+  "deploy" : {
+    "production" : {
+      "user" : "node",
+      "host" : "toto",
+      "ref"  : "origin/master",
+      "repo" : "git@github.com:vmarchaud/api.mineweb.org.git",
+      "path" : "/home/api/production",
+      "post-deploy" : "npm install && pm2 startOrRestart ecosystem.json --env production"
+    }
+  }
+}
