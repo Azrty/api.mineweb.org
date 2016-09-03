@@ -3,8 +3,11 @@
     {
       "name"      : "mineweb_api",
       "script"    : "src/app.js",
+      "max_restarts": 3,
       "env": {
+        "DEBUG": "*",
         "logger": "dev",
+        "PORT": 3000,
         "MYSQL_HOST": "status.hardfight.fr",
         "MYSQL_USER": "mineweb",
         "MYSQL_PWD": "mineweb42",
@@ -13,6 +16,7 @@
       },
       "env_production" : {
         "logger": "prod",
+        "PORT": 80,
         "MYSQL_HOST": "status.hardfight.fr",
         "MYSQL_USER": "mineweb",
         "MYSQL_PWD": "mineweb42",

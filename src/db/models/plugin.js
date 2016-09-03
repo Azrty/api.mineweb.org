@@ -1,5 +1,5 @@
 module.exports = {
-  identity: 'Plugin',
+  identity: 'plugin',
   connection: 'default',
   
   attributes: {

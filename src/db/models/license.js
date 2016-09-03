@@ -1,5 +1,5 @@
 module.exports = {
-  identity: 'License',
+  identity: 'license',
   connection: 'default',
 
   attributes: {

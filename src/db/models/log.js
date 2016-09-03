@@ -1,5 +1,5 @@
 module.exports = {
-  identity: 'Log',
+  identity: 'log',
   connection: 'default',
   
   attributes: {

@@ -12,6 +12,7 @@
     "morgan": "~1.7.0",
     "node-rsa": "^0.4.1",
     "sails-mysql": "^0.11.5",
+    "serve-favicon": "^2.3.0",
     "waterline": "^0.12.2"
   }
 }

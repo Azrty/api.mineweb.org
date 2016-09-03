@@ -1,5 +1,5 @@
 module.exports = {
-  identity: 'Hosting',
+  identity: 'hosting',
   connection: 'default',
   
   attributes: {

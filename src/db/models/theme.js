@@ -1,5 +1,5 @@
 module.exports = {
-  identity: 'Theme',
+  identity: 'theme',
   connection: 'default',
   
   attributes: {

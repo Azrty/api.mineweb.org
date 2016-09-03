@@ -1,12 +1,14 @@
 var express   = require('express');
 var router    = express.Router();
 var fs        = require('fs');
+var path      = require('path');
 var NodeRSA   = require('node-rsa');
 
-var mineweb_public_key = fs.readFile('../secret/id_rsa');
-var mineweb_private_key = fs.readFile('../secret/id_rsa.pub');
+var mineweb_public_key = fs.readFileSync(path.resolve(__dirname, '../secret/public.key'));
+var mineweb_private_key = fs.readFileSync(path.resolve(__dirname, '../secret/private.key'));
 
-var RSAkey    = new NodeRSA(mineweb_private_key);
+var RSAkey    = new NodeRSA(mineweb_private_key, 'pkcs1-private-pem');
+
 
 /** all post request need to be verified */
 router.post('/', function(req, res, next) {
@@ -25,6 +27,9 @@ router.post('/', function(req, res, next) {
     next()
 });
 
-// register routes here
+var versionRoutes = require('./versions')
 
+router.get('/getLastVersion', versionRoutes.getLastVersion)
+
+// register routes here
 module.exports = router;

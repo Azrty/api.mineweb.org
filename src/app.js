@@ -5,9 +5,11 @@ var bodyParser  = require('body-parser')
 var http        = require('http')
 var errors      = require('./error.js')
 var orm         = require('./db/orm.js')
+var favicon     = require('serve-favicon');
 
 var app         = express();
 
+app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
 app.use(logger(process.env.logger));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -15,21 +17,19 @@ app.use(bodyParser.urlencoded({ extended: false }));
 // import routes definition
 app.use('/api/v3/', require('./routes/index'));
 
+app.get('/', function (req, res) {
+  return res.sendStatus(200);
+})
+
 // handling 404
 app.use(function(req, res, next) {
-  var err = new Error('Not Found');
-  err.status = 404;
-  next(err);
+  res.sendStatus(404);
 });
 
 // handling 500 error in dev env
-if (process.env.NODE_ENV === 'development') {
+if (app.get('env') === 'development') {
   app.use(function(err, req, res, next) {
-    res.status(err.status || 500);
-    res.json('error', {
-      message: err.message,
-      error: err
-    });
+    return res.status(err.status || 500).json({ message: err.message, error: err });
   });
 }
 
@@ -40,12 +40,13 @@ app.use(function(err, req, res, next) {
 });
 
 var onReady = function (err, waterline) {
-  // expose model into all
-  global.Hosting = collections.Hosting;
-  global.License = collections.License;
-  global.Log = collections.Log;
-  global.Plugin = collections.Plugin;
-  global.Theme = collections.Theme;
+  if (err) return console.log(err)
+
+  // expose model into global
+  Object.keys(waterline.collections).forEach(function (key) {
+    var name = key.substr(0, 1).toUpperCase() + key.substr(1);
+    global[name] = waterline.collections[key];
+  })
 
   // start http server
   var server = http.createServer(app);
