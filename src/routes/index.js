@@ -44,7 +44,7 @@ router.post('/:action', function(req, res, next) {
         Hosting.findOne({ id: data.id, key: data.key }).exec(function (err, hosting) {
           // if hosting isnt found either, send an error
           if (hosting === undefined)
-            return res.status(400).json({ status: false, error: 'Invalid license used.'})
+            return res.status(404).json({ status: false, error: 'ID_OR_KEY_INVALID'})
           
           // if found continue
           cb_found(hosting, 'hosting');
@@ -59,15 +59,15 @@ router.post('/:action', function(req, res, next) {
     var cb_found = function (model, type) {
       // verify that the license/hosting isnt suspended
       if (model.suspended.length > 0)
-        return res.status(400).json({ status: false, error: 'License suspended : ' + license.suspended })
+        return res.status(403).json({ status: false, error: 'LICENSE_DISABLED'})
       
       // verify that the license/hosting isnt disabled by user
       if (model.state === false)
-        return res.status(400).json({ status: false, error: 'License disabled by his owner.'})
+        return res.status(403).json({ status: false, error: 'LICENSE_DISABLED'})
 
       // verify that the input domain is a valid one
       if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false)
-        return res.status(400).json({ status: false, error: 'Invalid hostname source.'})
+        return res.status(403).json({ status: false, error: 'Invalid hostname source.'})
       
       // normalize last slash in domain
       model.domain = model.domain[model.domain.length - 1] === '/' ? model.domain.substr(0, model.domain.length - 1) : model.domain;
@@ -77,9 +77,9 @@ router.post('/:action', function(req, res, next) {
       var input_domain = data.domain.toLowerCase();
 
       // normalize domain in the db
-      if (domain.indexOf('.') === -1)
+      if (type === 'hosting' && domain.hostType === 'SUBDOMAIN')
         domain = 'http://' + domain + ".craftwb.fr";
-      else if (type === 'hosting')
+      else if (type === 'hosting' && domain.hostType === 'DOMAIN')
         domain = 'http://' + domain;
       else if (domain.indexOf('www.') !== -1)
         domain = domain.replace('www.', '');
@@ -89,7 +89,7 @@ router.post('/:action', function(req, res, next) {
       
       // verify that domain match
       if (input_domain !== domain) {
-        return res.status(400).json({ status: false, error: 'Domain doesnt match with the license.' });
+        return res.status(403).json({ status: false, error: 'INVALID_URL' });
       }
 
       // its all good, log the request and pass the request to the actual route
