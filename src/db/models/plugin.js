@@ -10,6 +10,15 @@ module.exports = {
     	primaryKey: true,
 		},
 
+    name: {
+			type: 'string',
+			unique: true,
+			required: true,
+      min: 5,
+      max: 20,
+      size: 20
+		},
+
 		slug: {
 			type: 'string',
 			unique: true,
@@ -35,7 +44,14 @@ module.exports = {
 			required: true
 		},
 
-		version: {
+    version : {
+      type: 'string',
+      required: true,
+      unique: true,
+      regex: /^(\d+\.)?(\d+\.)?(\*|\d+)$/
+    },
+
+		versions : {
 			type: 'json',
 			required: true
 		},
@@ -58,6 +74,14 @@ module.exports = {
 		price: {
 			type: 'float',
 			defaultsTo: 0
-		}
-  },
+		},
+
+    toJSON: function () {
+			var plugin = this.toObject();
+      delete plugin.versions;
+      plugin.apiID = id;
+      delete plugin.id;
+      plugin.user = plugin.user.username;
+    }
+  }
 }

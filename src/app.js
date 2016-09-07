@@ -15,7 +15,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // import routes definition
-app.use('/api/v3/', require('./routes/index'));
+app.use('/api/v1/', require('./routes/v2'));
 
 app.get('/', function (req, res) {
   return res.sendStatus(200);
