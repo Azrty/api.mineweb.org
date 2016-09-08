@@ -4,14 +4,15 @@ var fs        = require('fs');
 var path      = require('path');
 var NodeRSA   = require('node-rsa');
 
-var mineweb_public_key = fs.readFileSync(path.resolve(__dirname, '../secret/public.key'));
-var mineweb_private_key = fs.readFileSync(path.resolve(__dirname, '../secret/private.key'));
+var cms_public_key = fs.readFileSync(path.resolve(__dirname, '../secret/v2/api_public.key'));
+var api_private_key = fs.readFileSync(path.resolve(__dirname, '../secret/v2/api_private.key'));
 
-var RSAkey    = new NodeRSA(mineweb_private_key, 'pkcs1-private-pem');
+var RSAkeyAPI    = new NodeRSA(api_private_key, 'pkcs1-private-pem');
+var RSAkeyCMS    = new NodeRSA(cms_public_key, 'pkcs1-public-pem');
 
-// list all action and its name in the log
+// list all post action and its name in the log
 var ACTIONS = {};
-ACTIONS['check'] = 'KEY_VERIFY';
+ACTIONS['key_verif'] = 'KEY_VERIFY';
 ACTIONS['getSecretKey'] = 'GET_SECRET_KEY';
 
 
@@ -24,7 +25,7 @@ router.post('/:action', function(req, res, next) {
 
     // try to decrypt the post data using RSA private key and parse it to json
     try {
-      var data = JSON.parse(RSAkey.decrypt(req.body[0]));
+      var data = JSON.parse(RSAkeyAPI.decrypt(req.body[0]));
     } catch (exception) {
       return res.status(400).json({ status: 'error', msg: exception.message })
     }
@@ -128,9 +129,9 @@ router.get('/getPurchasedPlugins', versionRoutes.getPurchasedPlugins)
 router.post('/key_verif', function(req, res) {
   var data = { time: Math.floor(Date.now()), domain: req.domain};
   try {
-    var encoded = RSAkey.encryptPrivate(JSON.stringify(data));
+    var encoded = RSAkeyCMS.encrypt(JSON.stringify(data));
   } catch (exception) {
-    return res.status(500).json({ status: 'error', msg: exception.message })
+    return res.status(200).json({ status: 'error', msg: exception.message })
   }
   return res.status(200).json({ status: 'success', time: encoded})
 })
@@ -145,9 +146,9 @@ router.post('/get_secret_key', function(req, res) {
 
   // encrypt and send the key
   try {
-    var encoded = RSAkey.encryptPrivate(req.model.secretKey);
+    var encoded = RSAkeyCMS.encrypt(req.model.secretKey);
   } catch (exception) {
-    return res.status(400).json({ status: 'error', error: exception.message })
+    return res.status(200).json({ status: 'error', error: exception.message })
   }
   return res.status(200).json({ status: 'success', secret_key: encoded})
 })

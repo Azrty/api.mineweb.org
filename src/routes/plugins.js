@@ -9,7 +9,6 @@ module.exports = {
     });
   },
 
-
   getFreePlugins: function (req, res) {
     Plugin.find({ price: 0}).populate('User').exec(function(err, plugins) {
         if (err)
@@ -59,4 +58,13 @@ module.exports = {
       })
     }
   },
+
+  getPlugin: function(req, res) {
+    var pluginID = req.query.apiID;
+
+    if (pluginID === undefined) 
+      return res.json({ status: 'error', msg: 'INVALID_PLUGIN_ID' });
+    
+    
+  }
 };
