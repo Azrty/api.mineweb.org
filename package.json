@@ -10,6 +10,7 @@
     "debug": "~2.2.0",
     "express": "~4.13.4",
     "morgan": "~1.7.0",
+    "multer": "^1.2.0",
     "node-rsa": "^0.4.1",
     "sails-mysql": "^0.11.5",
     "serve-favicon": "^2.3.0",
