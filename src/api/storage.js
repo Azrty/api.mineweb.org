@@ -39,5 +39,5 @@ app.post('/upload', upload.single('file'), function (err, req, res, next) {
   if (!type || !version || !name)
     return res.sendStatus(400);
   else
-    return res.sendStatus(200);
+    return res.json(req.file);
 })
