@@ -14,6 +14,9 @@ var RSAkeyCMS    = new NodeRSA(cms_public_key, 'pkcs1-public-pem');
 var ACTIONS = {};
 ACTIONS['key_verif'] = 'KEY_VERIFY';
 ACTIONS['getSecretKey'] = 'GET_SECRET_KEY';
+ACTIONS['get_plugin'] = 'GET_PLUGIN';
+ACTIONS['get_theme'] = 'GET_THEME';
+ACTIONS['get_update'] = 'GET_UPDATE';
 
 
 /** all post request need to be verified */
@@ -110,20 +113,43 @@ router.post('/:action', function(req, res, next) {
       req.model = model;
       req.type = type;
       req.domain = domain;
-
+      req.user = model.user;
+      
       next()
     }
 });
 
-var versionRoutes = require('./versions')
+var pluginRoutes = require('./versions')
+var themeRoutes = require('./themes')
+var downloadRoutes = require('./download')
 
-/** Route linked to CMS version and updates  */
-router.get('/get_update', versionRoutes.getLastVersion)
+/** Get the latest release of the cms  */
+router.get('/update', function (req, res) {
+    Version.findOne({state: 'RELEASE'}).sort('id DESC').exec(function(err, version) {
+        if (err || !version)
+          return res.status(404).json({ status: false, error: 'Not Found' });
+        return res.status(200).json({
+          type: version.type,
+          visible: version.visible,
+          version: version.version
+        })
+    });
+})
+
+/** Route linked to download */
+router.post('/get_update', downloadRoutes.get_update)
+router.post('/get_theme', downloadRoutes.get_theme)
+router.post('/get_plugin', downloadRoutes.get_plugin)
 
 /** Route linked to plugins */
-router.get('/getFreePlugins', versionRoutes.getFreePlugins)
-router.get('/getAllPlugins', versionRoutes.getAllPlugins)
-router.get('/getPurchasedPlugins', versionRoutes.getPurchasedPlugins)
+router.get('/getFreeThemes', themeRoutes.getFreeThemes)
+router.get('/getAllThemes', themeRoutes.getAllPlugins)
+router.get('/getPurchasedThemes', themeRoutes.getPurchasedThemes)
+
+/** Route linked to themes */
+router.get('/getFreePlugins', pluginRoutes.getFreePlugins)
+router.get('/getAllPlugins', pluginRoutes.getAllPlugins)
+router.get('/getPurchasedPlugins', pluginRoutes.getPurchasedPlugins)
 
 /** Used to verify that the license used is valid */
 router.post('/key_verif', function(req, res) {

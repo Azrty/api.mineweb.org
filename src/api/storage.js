@@ -11,7 +11,7 @@ var storage = multer.diskStorage({
   },
   filename: function (req, file, cb) {
     // file name
-    cb(null, req.body.type + '_' + req.body.name + '_' + req.body.version);
+    cb(null, req.body.type + '_' + req.body.slug + '_' + req.body.version);
   }
 })
 
@@ -34,9 +34,9 @@ app.post('/upload', upload.single('file'), function (err, req, res, next) {
 
   var type = req.body.type,
       version = req.body.version,
-      name = req.body.name;
+      slug = req.body.slug;
   
-  if (!type || !version || !name)
+  if (!type || !version || !slug)
     return res.sendStatus(400);
   else
     return res.json(req.file);
