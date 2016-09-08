@@ -55,6 +55,10 @@ module.exports = {
 
         // stream the file to the response
         pump(stream, res);
+
+        // add a download to the plugin
+        plugin.downloads = plugin.downloads + 1;
+        plugin.save(function (err) {});
       }
 
       // if the plugin is paid, verify that he paid it
@@ -98,6 +102,10 @@ module.exports = {
 
         // stream the file to the response
         pump(stream, res);
+        
+        // add a download to the theme
+        theme.downloads = theme.downloads + 1;
+        theme.save(function (err) {});
       }
 
       // if the theme is paid, verify that he paid it
