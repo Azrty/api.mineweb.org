@@ -3,7 +3,7 @@
     {
       "name"      : "mineweb_api",
       "script"    : "src/app.js",
-      "max_restarts": 3,
+      "max_restarts": 1,
       "env": {
         "DEBUG": "*",
         "logger": "dev",

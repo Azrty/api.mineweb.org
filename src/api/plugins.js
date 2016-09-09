@@ -1,20 +1,45 @@
+/** Function used to transform new DB model to old one */
+var transform = function (plugins) {
+  var transformed = [];
+
+  plugins.forEach(function (plugin) {
+    // add >= for every requirement
+    var req = plugin.requirements.map(function (requirement) {
+      return '>= ' + requirement;
+    })
+
+    // push the old format to the returned array
+    transformed.push({
+      apiID: plugin.id,
+      name: plugin.name,
+      slug: plugin.slug,
+      author: plugin.author.username,
+      version: plugin.version,
+      price: plugin.price,
+      requirements: req || []
+    })
+  })
+  // return the old formated themes
+  return transformed;
+}
+
 module.exports = {
 
   /** Get all plugins **/
   getAllPlugins: function (req, res) {
-    Plugin.find().exec(function(err, plugins) {
+    Plugin.find().populate('author').exec(function(err, plugins) {
         if (err)
           return res.json([]);
-        return res.json(plugins)
+        return res.json(transform(plugins))
     });
   },
 
   /** Get all free plugins **/
   getFreePlugins: function (req, res) {
-    Plugin.find({ price: 0}).exec(function(err, plugins) {
+    Plugin.find({ price: 0}).populate('author').exec(function(err, plugins) {
         if (err)
           return res.json([]);
-        return res.json(plugins)
+        return res.json(transform(plugins))
     });
   },
 
@@ -51,11 +76,11 @@ module.exports = {
         })
 
         // query all of them
-        Plugin.find({ id: plugin_ids}).exec(function (err, plugins) {
+        Plugin.find({ id: plugin_ids}).populate('author').exec(function (err, plugins) {
           if (plugins === undefined || plugins.length === 0)
             return res.json([]);
           else
-            return res.json(plugins);
+            return res.json(transform(plugins));
         })
       })
     }

@@ -7,8 +7,8 @@ var NodeRSA   = require('node-rsa');
 var cms_public_key = fs.readFileSync(path.resolve(__dirname, '../secret/v2/api_public.key'));
 var api_private_key = fs.readFileSync(path.resolve(__dirname, '../secret/v2/api_private.key'));
 
-var RSAkeyAPI    = new NodeRSA(api_private_key, 'pkcs1-private-pem');
-var RSAkeyCMS    = new NodeRSA(cms_public_key, 'pkcs1-public-pem');
+var RSAkeyAPI    = new NodeRSA(api_private_key, 'private');
+var RSAkeyCMS    = new NodeRSA(cms_public_key, 'public');
 
 // list all post action and its name in the log
 var ACTIONS = {};
@@ -119,8 +119,8 @@ router.post('/:action', function(req, res, next) {
     }
 });
 
-var pluginRoutes = require('./versions')
 var themeRoutes = require('./themes')
+var pluginRoutes = require('./plugins')
 var downloadRoutes = require('./download')
 
 /** Get the latest release of the cms  */
@@ -137,13 +137,13 @@ router.get('/update', function (req, res) {
 })
 
 /** Route linked to download */
-router.post('/get_update', downloadRoutes.get_update)
+router.post('/get_update', downloadRoutes.get_cms)
 router.post('/get_theme', downloadRoutes.get_theme)
 router.post('/get_plugin', downloadRoutes.get_plugin)
 
 /** Route linked to plugins */
 router.get('/getFreeThemes', themeRoutes.getFreeThemes)
-router.get('/getAllThemes', themeRoutes.getAllPlugins)
+router.get('/getAllThemes', themeRoutes.getAllThemes)
 router.get('/getPurchasedThemes', themeRoutes.getPurchasedThemes)
 
 /** Route linked to themes */

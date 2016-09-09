@@ -57,7 +57,7 @@ module.exports = {
     },
 
     replies: {
-			collection: 'TicketReplies',
+			collection: 'TicketReply',
 			via: 'ticket'
 		},
 

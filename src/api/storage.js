@@ -29,7 +29,7 @@ var upload = multer({
 })
 
 // handle upload call
-app.post('/upload', upload.single('file'), function (err, req, res, next) {
+router.post('/upload', upload.single('file'), function (err, req, res, next) {
   if (err) return res.sendStatus(400);
 
   var type = req.body.type,
@@ -41,3 +41,5 @@ app.post('/upload', upload.single('file'), function (err, req, res, next) {
   else
     return res.json(req.file);
 })
+
+module.exports = router;

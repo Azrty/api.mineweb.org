@@ -1,20 +1,46 @@
+
+/** Function used to transform new DB model to old one */
+var transform = function (themes) {
+  var transformed = [];
+
+  themes.forEach(function (theme) {
+    // add >= for every requirement
+    var req = theme.requirements.map(function (requirement) {
+      return '>= ' + requirement;
+    })
+
+    // push the old format to the returned array
+    transformed[theme.author.username.toLowerCase() + '.' + theme.slug.toLowerCase() + '.' + theme.id] = {
+      apiID: theme.id,
+      name: theme.name,
+      slug: theme.slug,
+      author: theme.author.username,
+      version: theme.version,
+      price: theme.price,
+      suported: req || []
+    }
+  })
+  // return the old formated themes
+  return transformed;
+}
+
 module.exports = {
 
   /** Get all themes **/
   getAllThemes: function (req, res) {
-    Theme.find().exec(function(err, themes) {
+    Theme.find().populate('author').exec(function(err, themes) {
         if (err)
           return res.json([]);
-        return res.json(themes)
+        return res.json(transform(themes))
     });
   },
 
   /** Get all free theme **/
   getFreeThemes: function (req, res) {
-    Theme.find({ price: 0}).exec(function(err, themes) {
+    Theme.find({ price: 0}).populate('author').exec(function(err, themes) {
         if (err)
           return res.json([]);
-        return res.json(themes)
+        return res.json(transform(themes))
     });
   },
 
@@ -51,11 +77,11 @@ module.exports = {
         })
 
         // query all of them
-        Theme.find({ id: theme_ids}).exec(function (err, themes) {
+        Theme.find({ id: theme_ids}).populate('author').exec(function (err, themes) {
           if (themes === undefined || themes.length === 0)
             return res.json([]);
           else
-            return res.json(themes);
+            return res.json(transform(themes));
         })
       })
     }
