@@ -179,8 +179,47 @@ router.post('/get_secret_key', function(req, res) {
   return res.status(200).json({ status: 'success', secret_key: encoded})
 })
 
+/** Used to create a ticket from CMS  */
+router.post('/addTicket', function(req, res) {
+  var data = req.body.debug,
+      content = req.body.content,
+      title = req.body.title;
+  
+  // if invalid data just tell him that its good
+  if (data === undefined || content === undefined || title === undefined || title.length === 0 || content.length === 0)
+    return res.sendStatus(200);
+  
+  data.id = req.model.id;
+  data.type = req.type;
+
+  // log data put by the cms
+  Log.create({ action: 'DEBUG', ip: req.ip, status: true, type: req.type.toUpperCase(), data: data }).exec(function (err, log) {})
+
+  // create the ticket
+  var ticket = {
+    user: req.user,
+    title: title,
+    category: 'OTHER'
+  }
+  // 5/5 ultra pratique eywek gg
+  ticket[req.type] = req.model;
+  Ticket.create(ticket).exec(function (err, ticket) {
+    if (err) return res.sendStatus(200);
+
+    // create the actual message for the ticket
+    Ticketreply.create({ user: req.user, ticket: ticket, content: content}).exec(function (err, log) {
+      return res.sendStatus(200);
+    })
+  })
+})
+
 /** Useless route but can be call so just send empty array */
 router.get('getCustomMessage', function (req, res) {
+  return res.status(200).json([]);
+})
+
+/** Useless route but can be call so just send empty array */
+router.get('getFAQ', function (req, res) {
   return res.status(200).json([]);
 })
 
