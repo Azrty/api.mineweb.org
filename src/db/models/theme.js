@@ -11,6 +11,15 @@ module.exports = {
     	primaryKey: true,
 		},
 
+    name: {
+			type: 'string',
+			unique: true,
+			required: true,
+      min: 5,
+      max: 20,
+      size: 20
+		},
+
 		slug: {
 			type: 'string',
 			unique: true,

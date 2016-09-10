@@ -21,6 +21,7 @@ ACTIONS['getSecretKey'] = 'GET_SECRET_KEY';
 ACTIONS['get_plugin'] = 'GET_PLUGIN';
 ACTIONS['get_theme'] = 'GET_THEME';
 ACTIONS['get_update'] = 'GET_UPDATE';
+ACTIONS['addTicket'] = 'ADD_TICKET';
 
 
 /** all post request need to be verified */
@@ -33,6 +34,8 @@ router.post('/:action', function(req, res, next) {
     var form = new multipart.Form();
     form.parse(req, function(err, fields, files) {
       if (err) return res.status(404).json({ status: 'error', msg: 'Cant parse body.' });
+
+      req.body = fields
 
       // try to decrypt the post data using RSA private key and parse it to json
       try {
@@ -48,7 +51,7 @@ router.post('/:action', function(req, res, next) {
       // verify that the source is a valid ipv4 && the id is a valid integer
       // if (/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/g.test(req.ip) === false ||
       //   /^[1-9]\d*$/.test(data.id) === false) {
-      //   Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'Invalid post data', data: data }).exec(function (err, log) {})
+      //   Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'Invalid post data', data: data }, function (err, log) {})
       //   return res.status(500).json({ status: 'error', msg: 'ID or IP invalid' })
       // }
 
@@ -137,20 +140,20 @@ var pluginRoutes = require('./plugins')
 var downloadRoutes = require('./download')
 
 /** Get the latest release of the cms  */
-router.get('/update', function (req, res) {
+router.get('/get_update', function (req, res) {
     Version.findOne({state: 'RELEASE'}).sort('id DESC').exec(function(err, version) {
         if (err || !version)
           return res.status(404).json({ status: false, error: 'Not Found' });
         return res.status(200).json({
-          type: version.type,
-          visible: version.visible,
-          version: version.version
+          type: version.type.toLowerCase(),
+          visible: (version.visible),
+          last_version: version.version
         })
     });
 })
 
 /** Route linked to download */
-router.post('/get_update', downloadRoutes.get_cms)
+router.post('/update', downloadRoutes.get_cms)
 router.post('/get_theme', downloadRoutes.get_theme)
 router.post('/get_plugin', downloadRoutes.get_plugin)
 
@@ -201,6 +204,7 @@ router.post('/get_secret_key', function(req, res) {
 
 /** Used to create a ticket from CMS  */
 router.post('/addTicket', function(req, res) {
+
   var data = req.body.debug,
       content = req.body.content,
       title = req.body.title;
@@ -213,7 +217,7 @@ router.post('/addTicket', function(req, res) {
   data.type = req.type;
 
   // log data put by the cms
-  Log.create({ action: 'DEBUG', ip: req.ip, status: true, type: req.type.toUpperCase(), data: data }).exec(function (err, log) {})
+  Log.create({ action: 'DEBUG', ip: req.ip, status: true, type: req.type.toUpperCase(), data: data }, function (err, log) {})
 
   // create the ticket
   var ticket = {
@@ -223,14 +227,15 @@ router.post('/addTicket', function(req, res) {
   }
   // 5/5 ultra pratique eywek gg
   ticket[req.type] = req.model;
-  Ticket.create(ticket).exec(function (err, ticket) {
+  Ticket.create(ticket, function (err, ticket) {
     if (err) return res.sendStatus(200);
 
     // create the actual message for the ticket
-    Ticketreply.create({ user: req.user, ticket: ticket, content: content}).exec(function (err, log) {
+    Ticketreply.create({ user: req.user, ticket: ticket, content: content}, function (err, log) {
       return res.sendStatus(200);
     })
   })
+
 })
 
 /** Useless route but can be call so just send empty array */

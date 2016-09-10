@@ -1,14 +1,9 @@
 
 /** Function used to transform new DB model to old one */
 var transform = function (themes) {
-  var transformed = [];
+  var transformed = {};
 
   themes.forEach(function (theme) {
-    // add >= for every requirement
-    var req = theme.requirements.map(function (requirement) {
-      return '>= ' + requirement;
-    })
-
     // push the old format to the returned array
     transformed[theme.author.username.toLowerCase() + '.' + theme.slug.toLowerCase() + '.' + theme.id] = {
       apiID: theme.id,
@@ -17,7 +12,7 @@ var transform = function (themes) {
       author: theme.author.username,
       version: theme.version,
       price: theme.price,
-      suported: req || []
+      supported: theme.supported || []
     }
   })
   // return the old formated themes
@@ -29,6 +24,8 @@ module.exports = {
   /** Get all themes **/
   getAllThemes: function (req, res) {
     Theme.find().populate('author').exec(function(err, themes) {
+      console.log(themes)
+      console.log(err)
         if (err)
           return res.json([]);
         return res.json(transform(themes))
@@ -55,7 +52,7 @@ module.exports = {
     License.findOne({ id: licenseID }).exec(function (err, license) {
       if (license === undefined) {
         Hosting.findOne({ id: licenseID }).exec(function (err, hosting) {
-          if (hosting === undefined) 
+          if (hosting === undefined)
             return res.json([])
           else
             cb_found(hosting.user);
@@ -70,7 +67,7 @@ module.exports = {
       Purchase.find({ user: userId, type: 'THEME' }).exec(function (err, purchases) {
         if (purchases === undefined || purchases.length === 0)
           return res.json([]);
-        
+
         // get an array of theme id
         var theme_ids = purchases.map(function (item) {
           return item.id;
