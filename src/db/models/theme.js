@@ -48,7 +48,6 @@ module.exports = {
     version : {
       type: 'string',
       required: true,
-      unique: true,
       regex: /^(\d+\.)?(\d+\.)?(\*|\d+)$/
     },
 

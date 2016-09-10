@@ -40,10 +40,10 @@ module.exports = {
 
   /** Get all purchased plugins by user**/
   getPurchasedPlugins: function (req, res) {
-    var licenseID = req.query.licenseID;
-
-    if (licenseID)
+    if (req.params.licenseID === undefined)
       return res.json([]);
+
+    var licenseID = req.params.licenseID;
 
     // search userId by using the license
     License.findOne({ id: licenseID }).exec(function (err, license) {
@@ -61,13 +61,14 @@ module.exports = {
 
     // when found, get plugin he has purchased
     var cb_found = function (userId) {
+
       Purchase.find({ user: userId, type: 'PLUGIN' }).exec(function (err, purchases) {
         if (purchases === undefined || purchases.length === 0)
           return res.json([]);
 
         // get an array of plugin id
         var plugin_ids = purchases.map(function (item) {
-          return item.id;
+          return item.itemId;
         })
 
         // query all of them
@@ -75,7 +76,7 @@ module.exports = {
           if (plugins === undefined || plugins.length === 0)
             return res.json([]);
           else
-            return res.json(transform(plugins));
+            return res.json({status: 'success', success: transform(plugins)});
         })
       })
     }

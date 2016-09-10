@@ -22,6 +22,7 @@ ACTIONS['get_plugin'] = 'GET_PLUGIN';
 ACTIONS['get_theme'] = 'GET_THEME';
 ACTIONS['get_update'] = 'GET_UPDATE';
 ACTIONS['addTicket'] = 'ADD_TICKET';
+ACTIONS['get_secret_key'] = 'GET_SECRET_KEY';
 
 
 /** all post request need to be verified */
@@ -160,12 +161,12 @@ router.post('/get_plugin', downloadRoutes.get_plugin)
 /** Route linked to plugins */
 router.get('/getFreeThemes', themeRoutes.getFreeThemes)
 router.get('/getAllThemes', themeRoutes.getAllThemes)
-router.get('/getPurchasedThemes', themeRoutes.getPurchasedThemes)
+router.get('/getPurchasedThemes/:licenseID', themeRoutes.getPurchasedThemes)
 
 /** Route linked to themes */
 router.get('/getFreePlugins', pluginRoutes.getFreePlugins)
 router.get('/getAllPlugins', pluginRoutes.getAllPlugins)
-router.get('/getPurchasedPlugins', pluginRoutes.getPurchasedPlugins)
+router.get('/getPurchasedPlugins/:licenseID', pluginRoutes.getPurchasedPlugins)
 
 /** Used to verify that the license used is valid */
 router.post('/key_verif', function(req, res) {
@@ -188,16 +189,21 @@ router.post('/key_verif', function(req, res) {
 /** Used to get the secret key to communicate between the CMS and the minecraft plugin  */
 router.post('/get_secret_key', function(req, res) {
   // if the license/hosting doesnt have secret key, generate one for him
-  if (req.model.secretKey === undefined) {
-    req.model.secretKey = Math.random().toString(32)
-    req.model.save(function (err) { /* thug life */})
+  if (req.model.secretKey === null) {
+    req.model.secretKey = "";
+    var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    for( var i=0; i < 32; i++ )
+        req.model.secretKey += possible.charAt(Math.floor(Math.random() * possible.length));
+
+    req.model.save(function (err) {})
   }
 
   // encrypt and send the key
   try {
     var encoded = RSAkeyCMS.encrypt(req.model.secretKey, 'base64');
   } catch (exception) {
-    return res.status(200).json({ status: 'error', error: exception.message })
+    return res.status(500).json({ status: 'error', error: exception.message })
   }
   return res.status(200).json({ status: 'success', secret_key: encoded})
 })

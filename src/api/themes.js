@@ -24,8 +24,6 @@ module.exports = {
   /** Get all themes **/
   getAllThemes: function (req, res) {
     Theme.find().populate('author').exec(function(err, themes) {
-      console.log(themes)
-      console.log(err)
         if (err)
           return res.json([]);
         return res.json(transform(themes))
@@ -43,10 +41,10 @@ module.exports = {
 
   /** Get all purchased themes by user**/
   getPurchasedThemes: function (req, res) {
-    var licenseID = req.query.licenseID;
-
-    if (licenseID)
+    if (req.params.licenseID === undefined)
       return res.json([]);
+
+    var licenseID = req.params.licenseID;
 
     // search userId by using the license
     License.findOne({ id: licenseID }).exec(function (err, license) {
@@ -70,7 +68,7 @@ module.exports = {
 
         // get an array of theme id
         var theme_ids = purchases.map(function (item) {
-          return item.id;
+          return item.itemId;
         })
 
         // query all of them
@@ -78,7 +76,7 @@ module.exports = {
           if (themes === undefined || themes.length === 0)
             return res.json([]);
           else
-            return res.json(transform(themes));
+            return res.json({status: 'success', success: transform(themes)});
         })
       })
     }
