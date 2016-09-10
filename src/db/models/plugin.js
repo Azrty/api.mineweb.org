@@ -1,7 +1,7 @@
 module.exports = {
   identity: 'plugin',
   connection: 'default',
-  
+
   attributes: {
     id: {
 			type: 'integer',

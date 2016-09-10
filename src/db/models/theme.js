@@ -1,7 +1,7 @@
 module.exports = {
   identity: 'theme',
   connection: 'default',
-  
+
   attributes: {
     id: {
 			type: 'number',
@@ -37,7 +37,10 @@ module.exports = {
 		},
 
     version : {
-      type: 'string'
+      type: 'string',
+      required: true,
+      unique: true,
+      regex: /^(\d+\.)?(\d+\.)?(\*|\d+)$/
     },
 
 		versions: {

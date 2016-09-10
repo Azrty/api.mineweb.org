@@ -1,7 +1,7 @@
 module.exports = {
   identity: 'log',
   connection: 'default',
-  
+
   attributes: {
     id : {
 			type: 'integer',
@@ -33,7 +33,6 @@ module.exports = {
 
 		type: {
 			type: 'string',
-			required: true,
 			in: ['LICENSE', 'HOSTING', 'USER']
 		},
 

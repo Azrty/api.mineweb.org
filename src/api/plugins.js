@@ -3,11 +3,6 @@ var transform = function (plugins) {
   var transformed = [];
 
   plugins.forEach(function (plugin) {
-    // add >= for every requirement
-    var req = plugin.requirements.map(function (requirement) {
-      return '>= ' + requirement;
-    })
-
     // push the old format to the returned array
     transformed.push({
       apiID: plugin.id,
@@ -16,7 +11,7 @@ var transform = function (plugins) {
       author: plugin.author.username,
       version: plugin.version,
       price: plugin.price,
-      requirements: req || []
+      requirements: plugin.requirements || []
     })
   })
   // return the old formated themes
@@ -54,7 +49,7 @@ module.exports = {
     License.findOne({ id: licenseID }).exec(function (err, license) {
       if (license === undefined) {
         Hosting.findOne({ id: licenseID }).exec(function (err, hosting) {
-          if (hosting === undefined) 
+          if (hosting === undefined)
             return res.json([])
           else
             cb_found(hosting.user);
@@ -69,7 +64,7 @@ module.exports = {
       Purchase.find({ user: userId, type: 'PLUGIN' }).exec(function (err, purchases) {
         if (purchases === undefined || purchases.length === 0)
           return res.json([]);
-        
+
         // get an array of plugin id
         var plugin_ids = purchases.map(function (item) {
           return item.id;

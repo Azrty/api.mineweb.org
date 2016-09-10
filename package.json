@@ -14,7 +14,7 @@
     "multiparty": "^4.1.2",
     "node-rsa": "^0.4.1",
     "pump": "^1.0.1",
-    "sails-mysql": "^0.11.5",
+    "sails-mysql": "^0.12.2",
     "serve-favicon": "^2.3.0",
     "waterline": "^0.12.2"
   }
