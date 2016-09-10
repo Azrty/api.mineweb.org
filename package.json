@@ -11,6 +11,7 @@
     "express": "~4.13.4",
     "morgan": "~1.7.0",
     "multer": "^1.2.0",
+    "multiparty": "^4.1.2",
     "node-rsa": "^0.4.1",
     "pump": "^1.0.1",
     "sails-mysql": "^0.11.5",

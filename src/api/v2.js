@@ -3,6 +3,8 @@ var router    = express.Router();
 var fs        = require('fs');
 var path      = require('path');
 var NodeRSA   = require('node-rsa');
+var multipart = require('multiparty')
+var form      = new multiparty.Form();
 
 var cms_public_key = fs.readFileSync(path.resolve(__dirname, '../secret/v2/api_public.key'));
 var api_private_key = fs.readFileSync(path.resolve(__dirname, '../secret/v2/api_private.key'));
@@ -26,97 +28,101 @@ router.post('/:action', function(req, res, next) {
       return res.status(404).json({ status: 'error', msg: 'Invalid action to perform' });
     }
 
-    // try to decrypt the post data using RSA private key and parse it to json
-    try {
-      var data = JSON.parse(RSAkeyAPI.decrypt(req.body[0]));
-    } catch (exception) {
-      return res.status(400).json({ status: 'error', msg: exception.message })
-    }
+    form.parse(req, function(err, fields, files) {
+      if (err) return res.status(404).json({ status: 'error', msg: 'Cant parse body.' });
 
-    // verify that it contain all the info we need
-    if (data.id === undefined || data.key === undefined || data.domain === undefined)
-      return res.status(500).json({ status: 'error', msg: 'Data not complete' })
-    
-    // verify that the source is a valid ipv4 && the id is a valid integer
-    if (/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/g.test(req.ip) === false ||
-      /^[1-9]\d*$/.test(data.id) === false) {
-      Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'Invalid post data', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
-      return res.status(500).json({ status: 'error', msg: 'ID or IP invalid' })
-    }
+      // try to decrypt the post data using RSA private key and parse it to json
+      try {
+        var data = JSON.parse(RSAkeyAPI.decrypt(fields[0]));
+      } catch (exception) {
+        return res.status(400).json({ status: 'error', msg: exception.message })
+      }
 
-    License.findOne({ id: data.id, key: data.key }).populate('user').exec(function (err, license) {
-      // if the license isnt found, search for a hosting license
-      if (license === undefined) {
-        Hosting.findOne({ id: data.id, key: data.key }).populate('user').exec(function (err, hosting) {
-          // if hosting isnt found either, send an error
-          if (hosting === undefined) {
-            Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'Invalid ID or Key', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
-            return res.status(404).json({ status: 'error', msg: 'ID_OR_KEY_INVALID'})
-          }
-          
-          // if found continue
-          cb_found(hosting, 'hosting');
-        })
-      }
-      // if found continue
-      else {
-        cb_found(license, 'license')
-      }
-    })
-
-    var cb_found = function (model, type) {
-      // verify that the license/hosting isnt suspended
-      if (model.suspended.length > 0) {
-        Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'License suspended', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
-        return res.status(403).json({ status: false, msg: 'LICENSE_DISABLED'})
-      }
+      // verify that it contain all the info we need
+      if (data.id === undefined || data.key === undefined || data.domain === undefined)
+        return res.status(500).json({ status: 'error', msg: 'Data not complete' })
       
-      // verify that the license/hosting isnt disabled by user
-      if (model.state === false) {
-        Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'License disabled by user', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
-        return res.status(403).json({ status: 'error', msg: 'LICENSE_DISABLED'})
+      // verify that the source is a valid ipv4 && the id is a valid integer
+      if (/^([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])\\.([01]?[0-9]?[0-9]|2[0-4][0-9]|25[0-5])$/g.test(req.ip) === false ||
+        /^[1-9]\d*$/.test(data.id) === false) {
+        Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'Invalid post data', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
+        return res.status(500).json({ status: 'error', msg: 'ID or IP invalid' })
       }
+
+      License.findOne({ id: data.id, key: data.key }).populate('user').exec(function (err, license) {
+        // if the license isnt found, search for a hosting license
+        if (license === undefined) {
+          Hosting.findOne({ id: data.id, key: data.key }).populate('user').exec(function (err, hosting) {
+            // if hosting isnt found either, send an error
+            if (hosting === undefined) {
+              Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'Invalid ID or Key', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
+              return res.status(404).json({ status: 'error', msg: 'ID_OR_KEY_INVALID'})
+            }
+            
+            // if found continue
+            cb_found(hosting, 'hosting');
+          })
+        }
+        // if found continue
+        else {
+          cb_found(license, 'license')
+        }
+      })
+
+      var cb_found = function (model, type) {
+        // verify that the license/hosting isnt suspended
+        if (model.suspended.length > 0) {
+          Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'License suspended', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
+          return res.status(403).json({ status: false, msg: 'LICENSE_DISABLED'})
+        }
         
+        // verify that the license/hosting isnt disabled by user
+        if (model.state === false) {
+          Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: false, error: 'License disabled by user', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
+          return res.status(403).json({ status: 'error', msg: 'LICENSE_DISABLED'})
+        }
+          
 
-      // verify that the input domain is a valid one
-      if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false) {
+        // verify that the input domain is a valid one
+        if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false) {
+          Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: true, type: type.toUpperCase(), data: data }).exec(function (err, log) {})
+          return res.status(403).json({ status: 'error', msg: 'INVALID_URL'})
+        }
+        
+        // normalize last slash in domain
+        model.domain = model.domain[model.domain.length - 1] === '/' ? model.domain.substr(0, model.domain.length - 1) : model.domain;
+        data.domain = data.domain[data.domain.length - 1] === '/' ? data.domain.substr(0, data.domain.length - 1) : data.domain;
+
+        var domain = model.domain.toLowerCase();
+        var input_domain = data.domain.toLowerCase();
+
+        // normalize domain in the db
+        if (type === 'hosting' && domain.hostType === 'SUBDOMAIN')
+          domain = 'http://' + domain + ".craftwb.fr";
+        else if (type === 'hosting' && domain.hostType === 'DOMAIN')
+          domain = 'http://' + domain;
+        else if (domain.indexOf('www.') !== -1)
+          domain = domain.replace('www.', '');
+        
+        if (input_domain.indexOf('www.') !== -1)
+          input_domain = input_domain.replace('www.', '');
+        
+        // verify that domain match
+        if (input_domain !== domain) {
+          Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: 'error', error: 'Domain doesnt match', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
+          return res.status(403).json({ status: 'error', msg: 'INVALID_URL' });
+        }
+
+        // its all good, log the request and pass the request to the actual route
         Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: true, type: type.toUpperCase(), data: data }).exec(function (err, log) {})
-        return res.status(403).json({ status: 'error', msg: 'INVALID_URL'})
+        req.model = model;
+        req.type = type;
+        req.domain = domain;
+        req.user = model.user;
+        
+        next()
       }
-      
-      // normalize last slash in domain
-      model.domain = model.domain[model.domain.length - 1] === '/' ? model.domain.substr(0, model.domain.length - 1) : model.domain;
-      data.domain = data.domain[data.domain.length - 1] === '/' ? data.domain.substr(0, data.domain.length - 1) : data.domain;
-
-      var domain = model.domain.toLowerCase();
-      var input_domain = data.domain.toLowerCase();
-
-      // normalize domain in the db
-      if (type === 'hosting' && domain.hostType === 'SUBDOMAIN')
-        domain = 'http://' + domain + ".craftwb.fr";
-      else if (type === 'hosting' && domain.hostType === 'DOMAIN')
-        domain = 'http://' + domain;
-      else if (domain.indexOf('www.') !== -1)
-        domain = domain.replace('www.', '');
-      
-      if (input_domain.indexOf('www.') !== -1)
-        input_domain = input_domain.replace('www.', '');
-      
-      // verify that domain match
-      if (input_domain !== domain) {
-        Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: 'error', error: 'Domain doesnt match', type: type.toUpperCase(), data: data }).exec(function (err, log) {})
-        return res.status(403).json({ status: 'error', msg: 'INVALID_URL' });
-      }
-
-      // its all good, log the request and pass the request to the actual route
-      Log.create({ action: ACTIONS[req.params.action], ip: req.ip, status: true, type: type.toUpperCase(), data: data }).exec(function (err, log) {})
-      req.model = model;
-      req.type = type;
-      req.domain = domain;
-      req.user = model.user;
-      
-      next()
-    }
+    });
 });
 
 var themeRoutes = require('./themes')
