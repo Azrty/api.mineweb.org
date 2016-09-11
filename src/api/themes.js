@@ -41,24 +41,28 @@ module.exports = {
 
   /** Get all purchased themes by user**/
   getPurchasedThemes: function (req, res) {
-    if (req.params.licenseID === undefined)
+    if (req.params.licenseID === undefined && req.method !== 'POST')
       return res.json([]);
 
     var licenseID = req.params.licenseID;
 
-    // search userId by using the license
-    License.findOne({ id: licenseID }).exec(function (err, license) {
-      if (license === undefined) {
-        Hosting.findOne({ id: licenseID }).exec(function (err, hosting) {
-          if (hosting === undefined)
-            return res.json([])
-          else
-            cb_found(hosting.user);
-        })
-      }
-      else
-        cb_found(license.user)
-    })
+    if (req.model === 'GET') {
+      // search userId by using the license
+      License.findOne({ id: licenseID }).exec(function (err, license) {
+        if (license === undefined) {
+          Hosting.findOne({ id: licenseID }).exec(function (err, hosting) {
+            if (hosting === undefined)
+              return res.json([])
+            else
+              cb_found(hosting.user);
+          })
+        }
+        else
+          cb_found(license.user)
+      })
+    }
+    else
+      cb_found(req.user.id);
 
     // when found, get theme he has purchased
     var cb_found = function (userId) {
