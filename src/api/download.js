@@ -23,7 +23,7 @@ module.exports = {
         res.writeHead(200, {
           'Content-Type': 'application/zip',
           'Content-Length': size, 
-          'Content-Disposition': 'attachment; filename=MinewebCMS' + '_' + plugin.version});
+          'Content-Disposition': 'attachment; filename=MinewebCMS' + '_' + result.version});
 
       // stream the file to the response
       pump(stream, res);
