@@ -3,6 +3,7 @@ module.exports = {
     if (error.syscall !== 'listen') {
       throw error;
     }
+    var port = process.env.PORT;
 
     var bind = typeof port === 'string'
       ? 'Pipe ' + port

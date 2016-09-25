@@ -73,14 +73,6 @@ module.exports = {
 		price: {
 			type: 'float',
 			defaultsTo: 0
-		},
-
-    toJSON: function () {
-			var plugin = this.toObject();
-      delete plugin.versions;
-      plugin.apiID = id;
-      delete plugin.id;
-      plugin.user = plugin.user.username;
-    }
+		}
   }
 }

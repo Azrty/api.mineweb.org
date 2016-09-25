@@ -27,7 +27,6 @@ module.exports = {
     // import models
     waterline.loadCollection(Waterline.Collection.extend(require('./models/license.js')));
     waterline.loadCollection(Waterline.Collection.extend(require('./models/hosting.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/log.js')));
     waterline.loadCollection(Waterline.Collection.extend(require('./models/plugin.js')));
     waterline.loadCollection(Waterline.Collection.extend(require('./models/theme.js')));
     waterline.loadCollection(Waterline.Collection.extend(require('./models/user.js')));

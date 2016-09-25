@@ -5,8 +5,6 @@
       "script"    : "src/app.js",
       "autorestart": false,
       "env": {
-        "DEBUG": "*",
-        "logger": "dev",
         "PORT": 3000,
         "MYSQL_HOST": "status.hardfight.fr",
         "MYSQL_USER": "mineweb",
@@ -15,13 +13,13 @@
         "NODE_ENV": "development"
       },
       "env_production" : {
-        "logger": "prod",
-        "PORT": 80,
+        "PORT": 3000,
         "MYSQL_HOST": "status.hardfight.fr",
         "MYSQL_USER": "mineweb",
         "MYSQL_PWD": "mineweb42",
         "MYSQL_DB": "mineweb",
-        "NODE_ENV": "production"
+        "NODE_ENV": "production",
+        "ELASTIC_URL": "http://51.255.36.38:9200"
       }
     }
   ],

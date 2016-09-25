@@ -5,18 +5,49 @@ var bodyParser  = require('body-parser')
 var http        = require('http')
 var errors      = require('./error.js')
 var orm         = require('./db/orm.js')
-var favicon     = require('serve-favicon');
+
+var winston     = require('winston');
+var expressLog  = require('express-winston');
+var ESTransport = require('winston-elasticsearch');
 
 var app         = express();
+var pmx         = require('pmx');
 
-app.use(favicon(path.join(__dirname, 'public', 'favicon.png')));
-app.use(logger(process.env.logger));
+var TRANSPORTS = [];
+var elasticTransport = new ESTransport({ level: 'info', clientOpts: { host: process.env.ELASTIC_URL }});
+
+elasticTransport.emitErrs = true;
+elasticTransport.on('error', function (err) {
+    pmx.notify(err);
+});
+
+if (process.env.NODE_ENV !== 'development')
+  TRANSPORTS.push(elasticTransport)
+else
+  TRANSPORTS.push(new winston.transports.Console({ json: true, colorize: true }))
+
+// define winston logger as global
+global.logger = new (winston.Logger)({
+  transports: TRANSPORTS,
+  exitOnError: false
+});
+
+// enable logging of express
+app.use(
+  expressLog.logger({
+      transports: TRANSPORTS,
+      meta: true,
+      expressFormat: true, 
+      colorize: true,
+      ignoredRoutes: ['/favicon.ico']
+  }));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // import routes definition
-app.use('/api/v1/', require('./api/v1'));
-app.use('/api/2/', require('./api/v2'));
+app.use('/api/v1/', require('./api/v1/'));
+app.use('/api/v2/', require('./api/v2/'));
 app.use('/api/storage/', require('./api/storage'));
 
 app.get('/', function (req, res) {
@@ -27,6 +58,16 @@ app.get('/', function (req, res) {
 app.use(function(req, res, next) {
   res.sendStatus(404);
 });
+
+// error logging
+app.use(
+  expressLog.errorLogger({
+      transports: TRANSPORTS,
+      meta: true,
+      expressFormat: true, 
+      colorize: true,
+      ignoredRoutes: ['/favicon.ico']
+  }));
 
 // handling 500 error in dev env
 if (app.get('env') === 'development') {
