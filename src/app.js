@@ -3,7 +3,6 @@ var path        = require('path')
 var logger      = require('morgan')
 var bodyParser  = require('body-parser')
 var http        = require('http')
-var errors      = require('./error.js')
 var orm         = require('./db/orm.js')
 
 var winston     = require('winston');
@@ -94,7 +93,9 @@ var onReady = function (err, waterline) {
   // start http server
   var server = http.createServer(app);
   server.listen(process.env.PORT || 8080);
-  server.on('error', errors.onError.bind(this));
+  server.on('error', function(err) {
+    throw err;
+  });
 
   // when the http server is ready, tell pm2 its good
   server.on('listening', function () {

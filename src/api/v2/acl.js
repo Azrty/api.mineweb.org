@@ -93,7 +93,7 @@ module.exports = function (req, res, next) {
     }
 
     // its all good, log the request and pass the request to the actual route
-    logger.info('Successfly passed post check', { action: req.path, ip: req.ip, status: true, type: type.toUpperCase(), data: data });
+    logger.info('Successfuly passed post check', { action: req.path, ip: req.ip, status: true, type: type.toUpperCase(), data: data });
     req.model = model;
     req.type = type;
     req.domain = domain;
