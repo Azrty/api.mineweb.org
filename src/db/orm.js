@@ -25,15 +25,15 @@ module.exports = {
     var waterline     = new Waterline();
 
     // import models
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/license.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/hosting.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/plugin.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/theme.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/user.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/purchase.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/version.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/ticket.js')));
-    waterline.loadCollection(Waterline.Collection.extend(require('./models/ticketReply.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/License.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/Hosting.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/Plugin.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/Theme.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/User.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/Purchase.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/Version.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/Ticket.js')));
+    waterline.loadCollection(Waterline.Collection.extend(require('./models/TicketReply.js')));
 
     // init the connection and models
     waterline.initialize(config, function (err, instance) {

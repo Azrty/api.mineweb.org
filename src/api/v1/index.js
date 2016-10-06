@@ -49,59 +49,45 @@ router.post('/:action', function (req, res, next) {
     if (data.id === undefined || data.key === undefined || data.domain === undefined)
       return res.status(500).json({ status: 'error', msg: 'Data not complete' })
 
-    License.find({ id: data.id, key: data.key }).populate('user').limit(1).exec(function (err, licenses) {
+    License.findOne({ id: data.id, key: data.key }).populate('user', 'hosting').exec(function (err, license) {
       // if the license isnt found, search for a hosting license
-      var license = licenses[0]
       if (license === undefined) {
-        Hosting.find({ id: data.id, key: data.key }).populate('user').limit(1).exec(function (err, hostings) {
-          // if hosting isnt found either, send an error
-          var hosting = hostings[0]
-          if (hosting === undefined) {
-            logger.info('Invalid ID or Key', { action: ACTIONS[req.params.action], ip: req.ip, status: false, data: data });
-            return res.status(404).json({ status: 'error', msg: 'ID_OR_KEY_INVALID' })
-          }
-          // if found continue
-          cb_found(hosting, 'hosting');
-        })
+        logger.info('Invalid ID or Key', { action: ACTIONS[req.params.action], ip: req.ip, status: false, data: data });
+        return res.status(404).json({ status: 'error', msg: 'ID_OR_KEY_INVALID' })
       }
-      // if found continue
-      else {
-        cb_found(license, 'license')
-      }
-    })
 
-    var cb_found = function (model, type) {
-      // verify that the license/hosting isnt suspended
-      if (model.suspended !== null) {
+      var type = license.hosting !== null ? 'license' : 'hosting';
+
+       // verify that license hasnt been disabled by us
+      if (license.suspended !== null && license.suspended.length > 0) {
         logger.info('License suspended', { action: ACTIONS[req.params.action], ip: req.ip, status: false, type: type.toUpperCase(), data: data });
         return res.status(403).json({ status: false, msg: 'LICENSE_DISABLED' })
       }
 
       // verify that the license/hosting isnt disabled by user
-      if (model.state === false) {
+      if (license.state === false) {
         logger.info('License disabled by user', { action: ACTIONS[req.params.action], ip: req.ip, status: false, type: type.toUpperCase(), data: data });
         return res.status(403).json({ status: 'error', msg: 'LICENSE_DISABLED' })
       }
-
 
       // verify that the input domain is a valid one
       if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false) {
         logger.info('Invalid domain', { action: ACTIONS[req.params.action], ip: req.ip, status: false, type: type.toUpperCase(), data: data });
         return res.status(403).json({ status: 'error', msg: 'INVALID_URL' })
       }
-
+      
       // normalize last slash in domain
-      if (model.host !== null) {
-        model.host = model.host[model.host.length - 1] === '/' ? model.host.substr(0, model.host.length - 1) : model.host;
+      if (license.host !== null) {
+        license.host = license.host[license.host.length - 1] === '/' ? license.host.substr(0, license.host.length - 1) : license.host;
         data.domain = data.domain[data.domain.length - 1] === '/' ? data.domain.substr(0, data.domain.length - 1) : data.domain;
 
-        var domain = model.host.toLowerCase();
+        var domain = license.host.toLowerCase();
         var input_domain = data.domain.toLowerCase();
 
         // normalize domain in the db
-        if (type === 'hosting' && domain.hostType === 'SUBDOMAIN')
+        if (domain.hosting !== null && domain.hosting.hostType === 'SUBDOMAIN')
           domain = 'http://' + domain + ".craftwb.fr";
-        else if (type === 'hosting' && domain.hostType === 'DOMAIN')
+        else if (domain.hosting !== null && domain.hosting.hostType === 'DOMAIN')
           domain = 'http://' + domain;
         else if (domain.indexOf('www.') !== -1)
           domain = domain.replace('www.', '');
@@ -109,23 +95,22 @@ router.post('/:action', function (req, res, next) {
         if (input_domain.indexOf('www.') !== -1)
           input_domain = input_domain.replace('www.', '');
 
+        // verify that domain match
+        if (input_domain !== domain) {
+          logger.info('Domain doesnt match', { action: ACTIONS[req.params.action], ip: req.ip, status: false, type: type.toUpperCase(), data: data });
+          return res.status(403).json({ status: 'error', msg: 'INVALID_URL' });
+        }
       }
 
-      // verify that domain match
-      if (input_domain !== domain && model.host !== null) {
-        logger.info('Domain doesnt match', { action: ACTIONS[req.params.action], ip: req.ip, status: false, type: type.toUpperCase(), data: data });
-        return res.status(403).json({ status: 'error', msg: 'INVALID_URL' });
-      }
-
-      // its all good, log the request and pass the request to the actual route
+       // its all good, log the request and pass the request to the actual route
       logger.info('Successfly passed post check', { action: ACTIONS[req.params.action], ip: req.ip, status: true, type: type.toUpperCase(), data: data });
-      req.model = model;
+      req.model = license;
       req.type = type;
-      req.domain = domain;
+      req.domain = domain || 'none';
       req.user = model.user;
 
-      next()
-    }
+      return next()
+    })
   });
 });
 
