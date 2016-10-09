@@ -13,15 +13,16 @@ var app         = express();
 var pmx         = require('pmx');
 
 var TRANSPORTS = [];
-var elasticTransport = new ESTransport({ level: 'info', clientOpts: { host: process.env.ELASTIC_URL }});
 
-elasticTransport.emitErrs = true;
-elasticTransport.on('error', function (err) {
-    pmx.notify(err);
-});
+if (process.env.NODE_ENV === 'production') {
+  var elasticTransport = new ESTransport({ level: 'info', clientOpts: { indexPrefix: 'api-express', host: process.env.ELASTIC_URI }});
 
-if (process.env.NODE_ENV !== 'development')
+  elasticTransport.emitErrs = true;
+  elasticTransport.on('error', function (err) {
+      pmx.notify(err);
+  });
   TRANSPORTS.push(elasticTransport)
+}
 else
   TRANSPORTS.push(new winston.transports.Console({ json: true, colorize: true }))
 
@@ -36,9 +37,16 @@ app.use(
   expressLog.logger({
       transports: TRANSPORTS,
       meta: true,
+      msg: '',
       expressFormat: true, 
       colorize: true,
-      ignoredRoutes: ['/favicon.ico']
+      ignoredRoutes: ['/favicon.ico'],
+      requestFilter: function (req, propName) {
+        var data = req[propName];
+        // filter headers to only get lang / user-agent
+        if (propName === 'headers') return { "user-agent": data["user-agent"], "accept-language" : data["accept-language"] }
+        return req[propName]; 
+      }
   }));
 
 app.use(bodyParser.json());
@@ -50,7 +58,7 @@ app.use('/api/v2/', require('./api/v2/'));
 app.use('/api/storage/', require('./api/storage'));
 
 app.get('/', function (req, res) {
-  return res.sendStatus(200);
+  return res.json({ api_name: "Mineweb", environement: process.env.NODE_ENV || 'development' });
 })
 
 // handling 404
@@ -69,17 +77,16 @@ app.use(
   }));
 
 // handling 500 error in dev env
-if (app.get('env') === 'development') {
+if (app.get('env') === 'development')
   app.use(function(err, req, res, next) {
     return res.status(err.status || 500).json({ message: err.message, error: err });
   });
-}
-
 // handling 500 error in prod denv
-app.use(function(err, req, res, next) {
-  res.status(err.status || 500);
-  next(err)
-});
+else
+  app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    next(err)
+  });
 
 var onReady = function (err, waterline) {
   if (err) return console.log(err)

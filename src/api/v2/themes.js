@@ -1,7 +1,6 @@
-
 /** Function used to transform new DB model to old one */
 var transform = function (themes) {
-  var transformed = {};
+  var transformed = [];
 
   themes.forEach(function (theme) {
     // push the old format to the returned array
