@@ -7,7 +7,7 @@ var path        = require('path')
 var storage = multer.diskStorage({
   destination: function (req, file, cb) {
     // dir to upload
-    cb(null, path.join(__dirname, 'public'))
+    cb(null, path.join(__dirname, '../public'))
   },
   filename: function (req, file, cb) {
     // file name
@@ -20,7 +20,7 @@ var upload = multer({
   storage: storage,
   fileFilter: function (req, file, cb) {
     // accept only zip file
-    if (req.file.mimetype !== 'application/zip')
+    if (file.mimetype !== 'application/zip')
       cb(null, false)
     else
       cb(null, true)
@@ -29,9 +29,7 @@ var upload = multer({
 })
 
 // handle upload call
-router.post('/upload', upload.single('file'), function (err, req, res, next) {
-  if (err) return res.sendStatus(400);
-
+router.post('/upload', upload.single('file'), function (req, res, next) {
   var type = req.body.type,
       version = req.body.version,
       slug = req.body.slug;
