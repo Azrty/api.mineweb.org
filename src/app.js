@@ -14,7 +14,7 @@ var pmx         = require('pmx');
 var TRANSPORTS = [];
 
 if (process.env.NODE_ENV === 'production') {
-  var elasticTransport = new ESTransport({ level: 'info', clientOpts: { index: 'api-express', host: process.env.ELASTIC_HOST + ':' + process.env.ELASTIC_PORT }});
+  var elasticTransport = new ESTransport({ level: 'info', index: 'api-express', clientOpts: { host: process.env.ELASTIC_HOST + ':' + process.env.ELASTIC_PORT }});
 
   elasticTransport.emitErrs = true;
   elasticTransport.on('error', function (err) {
@@ -24,12 +24,6 @@ if (process.env.NODE_ENV === 'production') {
 }
 else
   TRANSPORTS.push(new winston.transports.Console({ json: true, colorize: true }))
-
-// define winston logger as global
-global.logger = new (winston.Logger)({
-  transports: TRANSPORTS,
-  exitOnError: false
-});
 
 // enable logging of express
 app.use(
