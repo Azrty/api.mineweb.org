@@ -26,7 +26,7 @@ if (process.env.NODE_ENV === 'production') {
   config.connections.elasticsearch = {
     adapter: 'sails-elasticsearch',
     host: process.env.ELASTIC_HOST,
-    port: process.env.ELASTIC_PWD,
+    port: process.env.ELASTIC_PORT,
     log: 'warning',
     index: 'api-log'
   }
