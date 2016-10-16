@@ -4,7 +4,7 @@ var pump    = require('pump');
 
 // simple function to return the exact path of a file
 var getFilePath = function (name) {
-  return path.join(__dirname, 'public', name);
+  return path.join(__dirname, '../public', name);
 }
 
 module.exports = {
@@ -32,7 +32,7 @@ module.exports = {
 
   /** Download a the last version of a plugin */
   get_plugin: function (req, res) {
-    var pluginID = req.param('apiID');
+    var pluginID = req.params.apiID;
 
     if (pluginID === undefined)
       return res.json({ status: 'error', msg: 'INVALID_PLUGIN_ID' });
@@ -43,7 +43,7 @@ module.exports = {
         return res.json({ status: 'error', msg: 'INVALID_PLUGIN_ID' });
 
       var trigger_download = function () {
-        var path = getFilePath('plugin_' + plugin.slug + '_' + plugin.version);
+        var path = getFilePath('PLUGIN_' + plugin.slug + '_' + plugin.version);
         var size = fs.statSync(path)
         var stream = fs.createReadStream(path)
 
