@@ -119,7 +119,7 @@ router.post('/addTicket', ensurePostReq, function (req, res) {
 })
 
 /** Useless route but can be call so just send empty array */
-router.get('/getCustomMessage', function (req, res) {
+router.post('/getCustomMessage', ensurePostReq, function (req, res) {
   return res.json([]);
 })
 
