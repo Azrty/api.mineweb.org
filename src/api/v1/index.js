@@ -53,7 +53,7 @@ router.post('/:action', function (req, res, next) {
       // if the license isnt found, search for a hosting license
       if (license === undefined) {
         Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'Invalid ID or Key', data: data }, function (err, log) { })
-        return res.status(404).json({ status: 'error', msg: 'ID_OR_KEY_INVALID' })
+        return res.json({ status: 'error', msg: 'ID_OR_KEY_INVALID' })
       }
 
       var type = license.hosting !== null ? 'license' : 'hosting';
@@ -61,19 +61,19 @@ router.post('/:action', function (req, res, next) {
       // verify that license hasnt been disabled by us
       if (license.suspended !== null && license.suspended.length > 0) {
         Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'License suspended', type: type.toUpperCase(), data: data }, function (err, log) { })
-        return res.status(403).json({ status: false, msg: 'LICENSE_DISABLED' })
+        return res.json({ status: false, msg: 'LICENSE_DISABLED' })
       }
 
       // verify that the license/hosting isnt disabled by user
       if (license.state === false) {
         Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'License disabled by user', type: type.toUpperCase(), data: data }, function (err, log) { })
-        return res.status(403).json({ status: 'error', msg: 'LICENSE_DISABLED' })
+        return res.json({ status: 'error', msg: 'LICENSE_DISABLED' })
       }
 
       // verify that the input domain is a valid one
       if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false) {
         Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, type: type.toUpperCase(), data: data }, function (err, log) { })
-        return res.status(403).json({ status: 'error', msg: 'INVALID_URL' })
+        return res.json({ status: 'error', msg: 'INVALID_URL' })
       }
 
       // normalize last slash in domain
@@ -98,10 +98,9 @@ router.post('/:action', function (req, res, next) {
         // verify that domain match
         if (input_domain !== domain) {
           Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'Domain doesnt match', type: type.toUpperCase(), data: data }, function (err, log) { })
-          return res.status(403).json({ status: 'error', msg: 'INVALID_URL' });
+          return res.json({ status: 'error', msg: 'INVALID_URL' });
         }
       }
-      console.log(license)
       // its all good, log the request and pass the request to the actual route
       Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: true, type: type.toUpperCase(), data: data }, function (err, log) { })
       req.model = license;
