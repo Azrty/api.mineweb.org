@@ -71,7 +71,7 @@ module.exports = {
 
       // if the plugin is paid, verify that he paid it
       if (plugin.price > 0)
-        Purchase.findOne({ user: req.user, type: 'PLUGIN', itemId: pluginID })
+        Purchase.findOne({ user: req.user.id, type: 'PLUGIN', itemId: pluginID })
           .exec(function (err, purchase) {
             // dont buyed it, go fuck yourself
             if (err || !purchase)
@@ -123,7 +123,7 @@ module.exports = {
 
       // if the theme is paid, verify that he paid it
       if (theme.price > 0)
-        Purchase.findOne({ user: req.user, type: 'THEME', itemId: themeID })
+        Purchase.findOne({ user: req.user.id, type: 'THEME', itemId: themeID })
           .exec(function (err, purchase) {
             // dont buyed it, go fuck yourself
             if (err || !purchase)
