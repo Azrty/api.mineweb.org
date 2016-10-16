@@ -49,7 +49,7 @@ router.post('/:action', function (req, res, next) {
     if (data.id === undefined || data.key === undefined || data.domain === undefined)
       return res.status(500).json({ status: 'error', msg: 'Data not complete' })
 
-    License.findOne({ id: data.id, key: data.key }).populate('user', 'hosting').exec(function (err, license) {
+    License.findOne({ id: data.id, key: data.key }).populate(['user', 'hosting']).exec(function (err, license) {
       // if the license isnt found, search for a hosting license
       if (license === undefined) {
         Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'Invalid ID or Key', data: data }, function (err, log) { })
@@ -101,7 +101,7 @@ router.post('/:action', function (req, res, next) {
           return res.status(403).json({ status: 'error', msg: 'INVALID_URL' });
         }
       }
-
+      console.log(license)
       // its all good, log the request and pass the request to the actual route
       Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: true, type: type.toUpperCase(), data: data }, function (err, log) { })
       req.model = license;
