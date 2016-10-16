@@ -45,7 +45,7 @@ module.exports = function (req, res, next) {
     }
 
     // normalize last slash in domain
-    if (license.host !== null) {
+    if (license.host) {
       license.host = license.host[license.host.length - 1] === '/' ? license.host.substr(0, license.host.length - 1) : license.host;
       data.domain = data.domain[data.domain.length - 1] === '/' ? data.domain.substr(0, data.domain.length - 1) : data.domain;
 
@@ -53,9 +53,9 @@ module.exports = function (req, res, next) {
       var input_domain = data.domain.toLowerCase();
 
       // normalize domain in the db
-      if (domain.hosting !== null && domain.hosting.hostType === 'SUBDOMAIN')
+      if (domain.hosting && domain.hosting.hostType === 'SUBDOMAIN')
         domain = 'http://' + domain + ".craftwb.fr";
-      else if (domain.hosting !== null && domain.hosting.hostType === 'DOMAIN')
+      else if (domain.hosting && domain.hosting.hostType === 'DOMAIN')
         domain = 'http://' + domain;
       else if (domain.indexOf('www.') !== -1)
         domain = domain.replace('www.', '');
@@ -75,7 +75,7 @@ module.exports = function (req, res, next) {
     req.model = license;
     req.type = type;
     req.domain = domain || 'none';
-    req.user = model.user;
+    req.user = license.user;
 
     return next()
   })
