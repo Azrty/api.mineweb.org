@@ -60,19 +60,19 @@ router.post('/:action', function (req, res, next) {
 
       // verify that license hasnt been disabled by us
       if (license.suspended !== null && license.suspended.length > 0) {
-        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'License suspended', type: type.toUpperCase(), data: data }, function (err, log) { })
+        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'License suspended', license: license.id, data: data }, function (err, log) { })
         return res.json({ status: false, msg: 'LICENSE_DISABLED' })
       }
 
       // verify that the license/hosting isnt disabled by user
       if (license.state === false) {
-        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'License disabled by user', type: type.toUpperCase(), data: data }, function (err, log) { })
+        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'License disabled by user', license: license.id, data: data }, function (err, log) { })
         return res.json({ status: 'error', msg: 'LICENSE_DISABLED' })
       }
 
       // verify that the input domain is a valid one
       if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false) {
-        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, type: type.toUpperCase(), data: data }, function (err, log) { })
+        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, license: license.id, data: data }, function (err, log) { })
         return res.json({ status: 'error', msg: 'INVALID_URL' })
       }
 
@@ -97,12 +97,12 @@ router.post('/:action', function (req, res, next) {
 
         // verify that domain match
         if (input_domain !== domain) {
-          Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'Domain doesnt match', type: type.toUpperCase(), data: data }, function (err, log) { })
+          Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'Domain doesnt match', license: license.id, data: data }, function (err, log) { })
           return res.json({ status: 'error', msg: 'INVALID_URL' });
         }
       }
       // its all good, log the request and pass the request to the actual route
-      Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: true, type: type.toUpperCase(), data: data }, function (err, log) { })
+      Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: true, license: license.id, data: data }, function (err, log) { })
       req.model = license;
       req.type = type;
       req.domain = domain || 'none';
@@ -223,9 +223,14 @@ router.get('getCustomMessage', function (req, res) {
   return res.status(200).json([]);
 })
 
-/** Useless route but can be call so just send empty array */
-router.get('getFAQ', function (req, res) {
-  return res.status(200).json([]);
+/** Send faq data */
+router.get('getFAQ/:lang', function (req, res) {
+  var lang = req.params.lang
+  Faq.find({lang: lang}).exec(function (err, questions) {
+    if (err) return res.status(200).json([])
+
+    return res.status(200).json(questions);
+  })
 })
 
 // register routes here
