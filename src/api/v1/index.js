@@ -219,17 +219,20 @@ router.post('/addTicket', function (req, res) {
 })
 
 /** Useless route but can be call so just send empty array */
-router.get('getCustomMessage', function (req, res) {
-  return res.status(200).json([]);
+router.get('/getCustomMessage', function (req, res) {
+  return res.json([]);
 })
 
 /** Send faq data */
-router.get('getFAQ/:lang', function (req, res) {
-  var lang = req.params.lang
-  Faq.find({lang: lang}).exec(function (err, questions) {
-    if (err) return res.status(200).json([])
+router.get('/getFAQ/:lang*?', function (req, res) {
+  var lang = req.params.lang;
+  if (!lang)
+    return res.json([]);
 
-    return res.status(200).json(questions);
+  Faq.find({lang: lang}).exec(function (err, questions) {
+    if (err) return res.json([])
+
+    return res.json(questions);
   })
 })
 

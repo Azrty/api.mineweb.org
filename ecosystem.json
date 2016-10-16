@@ -1,19 +1,20 @@
 {
-  "apps" : [
+  "apps": [
     {
-      "name"      : "mineweb_api",
-      "script"    : "src/app.js",
+      "name": "mineweb_api",
+      "script": "src/app.js",
       "exec_mode": "cluster",
       "instances": 1,
       "env": {
         "PORT": 3000,
+        "DEBUG": "*",
         "MYSQL_HOST": "status.hardfight.fr",
         "MYSQL_USER": "mineweb",
         "MYSQL_PWD": "mineweb42",
         "MYSQL_DB": "mineweb",
         "NODE_ENV": "development"
       },
-      "env_production" : {
+      "env_production": {
         "PORT": 80,
         "MYSQL_HOST": "localhost",
         "MYSQL_USER": "mineweb",
