@@ -32,7 +32,7 @@ module.exports = {
 
   /** Download a the last version of a plugin */
   get_plugin: function (req, res) {
-    var pluginID = req.param(apiID);
+    var pluginID = req.param('apiID');
 
     if (pluginID === undefined)
       return res.json({ status: 'error', msg: 'INVALID_PLUGIN_ID' });
