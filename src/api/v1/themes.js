@@ -5,7 +5,7 @@ var transform = function (themes) {
 
   themes.forEach(function (theme) {
     if (!theme.author || !theme.author.username) return ;
-    
+
     // push the old format to the returned array
     transformed[theme.author.username.toLowerCase() + '.' + theme.slug.toLowerCase() + '.' + theme.id] = {
       apiID: theme.id,
@@ -63,7 +63,7 @@ module.exports = {
 
         // query all of them
         Theme.find({  state: 'CONFIRMED', id: theme_ids }).populate('author').exec(function (err, themes) {
-          if (themes === undefined || themes.length === 0)
+          if (err || themes === undefined || themes.length === 0)
             return res.json([]);
           else
             return res.json({ status: 'success', success: transform(themes) });

@@ -22,7 +22,7 @@ module.exports = {
 
   /** Get all plugins **/
   getAllPlugins: function (req, res) {
-    Plugin.find().populate('author').exec(function (err, plugins) {
+    Plugin.find({state: 'CONFIRMED'}).populate('author').exec(function (err, plugins) {
       if (err)
         return res.json([]);
       return res.json(transform(plugins))
@@ -31,7 +31,7 @@ module.exports = {
 
   /** Get all free plugins **/
   getFreePlugins: function (req, res) {
-    Plugin.find({ price: 0 }).populate('author').exec(function (err, plugins) {
+    Plugin.find({ price: 0, state: 'CONFIRMED' }).populate('author').exec(function (err, plugins) {
       if (err)
         return res.json([]);
       return res.json(transform(plugins))
@@ -50,7 +50,7 @@ module.exports = {
       })
 
       // query all of them
-      Plugin.find({ id: plugin_ids }).populate('author').exec(function (err, plugins) {
+      Plugin.find({ id: plugin_ids, state: 'CONFIRMED' }).populate('author').exec(function (err, plugins) {
         if (err || plugins === undefined || plugins.length === 0)
           return res.json([]);
         else

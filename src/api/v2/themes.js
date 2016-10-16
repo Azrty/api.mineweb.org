@@ -22,7 +22,7 @@ module.exports = {
 
   /** Get all themes **/
   getAllThemes: function (req, res) {
-    Theme.find().populate('author').exec(function (err, themes) {
+    Theme.find({state: 'CONFIRMED'}).populate('author').exec(function (err, themes) {
       if (err)
         return res.json([]);
       return res.json(transform(themes))
@@ -31,7 +31,7 @@ module.exports = {
 
   /** Get all free theme **/
   getFreeThemes: function (req, res) {
-    Theme.find({ price: 0 }).populate('author').exec(function (err, themes) {
+    Theme.find({ price: 0, state: 'CONFIRMED' }).populate('author').exec(function (err, themes) {
       if (err)
         return res.json([]);
       return res.json(transform(themes))
@@ -50,7 +50,7 @@ module.exports = {
       })
 
       // query all of them
-      Theme.find({ id: theme_ids }).populate('author').exec(function (err, themes) {
+      Theme.find({ id: theme_ids, state: 'CONFIRMED' }).populate('author').exec(function (err, themes) {
         if (themes === undefined || themes.length === 0)
           return res.json([]);
         else

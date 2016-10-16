@@ -16,7 +16,7 @@ module.exports = {
         return res.status(404).json({ status: false, error: 'Not Found' });
 
       var path = getFilePath('cms_mineweb_' + result.version);
-      
+
       var size = fs.stat(path, function (err, data) {
         if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
 
@@ -40,7 +40,7 @@ module.exports = {
     if (pluginID === undefined)
       return res.json({ status: 'error', msg: 'INVALID_PLUGIN_ID' });
 
-    Plugin.findOne({ id: pluginID }).exec(function (err, plugin) {
+    Plugin.findOne({ id: pluginID, state: 'CONFIRMED' }).exec(function (err, plugin) {
       // plugin doesnt exist
       if (err || !plugin)
         return res.json({ status: 'error', msg: 'INVALID_PLUGIN_ID' });
@@ -62,7 +62,7 @@ module.exports = {
           // stream the file to the response
           pump(stream, res);
         })
-        
+
 
         // add a download to the plugin
         plugin.downloads = plugin.downloads + 1;
@@ -87,18 +87,18 @@ module.exports = {
 
   /** Download a the last version of a theme */
   get_theme: function (req, res) {
-    var themeID = req.query.apiID;
+    var themeID = req.params.apiID;
 
     if (themeID === undefined)
       return res.json({ status: 'error', msg: 'INVALID_THEME_ID' });
 
-    Theme.findOne({ id: themeID }).exec(function (err, theme) {
+    Theme.findOne({ id: themeID, state: 'CONFIRMED' }).exec(function (err, theme) {
       // theme doesnt exist
       if (err || !theme)
         return res.json({ status: 'error', msg: 'INVALID_THEME_ID' });
 
       var trigger_download = function () {
-        var path = getFilePath('theme_' + theme.slug + '_' + theme.version);
+        var path = getFilePath('THEME_' + theme.slug + '_' + theme.version);
 
         var size = fs.stat(path, function (err, data) {
           if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
@@ -114,7 +114,7 @@ module.exports = {
           // stream the file to the response
           pump(stream, res);
         })
-        
+
 
         // add a download to the theme
         theme.downloads = theme.downloads + 1;

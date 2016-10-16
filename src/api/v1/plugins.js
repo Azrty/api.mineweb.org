@@ -60,7 +60,7 @@ module.exports = {
 
         // query all of them
         Plugin.find({ state: 'CONFIRMED', id: plugin_ids }).populate('author').exec(function (err, plugins) {
-          if (plugins === undefined || plugins.length === 0)
+          if (err || plugins === undefined || plugins.length === 0)
             return res.json([]);
           else
             return res.json({ status: 'success', success: transform(plugins) });
