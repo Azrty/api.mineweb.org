@@ -3,115 +3,15 @@ var router = express.Router();
 var fs = require('fs');
 var path = require('path');
 var NodeRSA = require('node-rsa');
-var multipart = require('multiparty');
 var serialization = require("php-serialization");
 
-var cms_public_key = fs.readFileSync(path.resolve(__dirname, '../../secret/v1/cms_public.key'));
-var api_private_key = fs.readFileSync(path.resolve(__dirname, '../../secret/v1/api_private.key'));
+var ensurePostReq = require('./acl.js')
 
-var RSAkeyAPI = new NodeRSA(api_private_key, 'private');
-RSAkeyAPI.setOptions({ encryptionScheme: 'pkcs1' })
+var cms_public_key = fs.readFileSync(path.resolve(__dirname, '../../secret/v1/cms_public.key'));
 var RSAkeyCMS = new NodeRSA(cms_public_key, 'public');
 RSAkeyCMS.setOptions({ encryptionScheme: 'pkcs1' })
 
-// list all post action and its name in the log
-var ACTIONS = {};
-ACTIONS['key_verif'] = 'KEY_VERIFY';
-ACTIONS['getSecretKey'] = 'GET_SECRET_KEY';
-ACTIONS['get_plugin'] = 'GET_PLUGIN';
-ACTIONS['get_theme'] = 'GET_THEME';
-ACTIONS['get_update'] = 'GET_UPDATE';
-ACTIONS['addTicket'] = 'ADD_TICKET';
-ACTIONS['get_secret_key'] = 'GET_SECRET_KEY';
-
-
 /** all post request need to be verified */
-router.post('/:action', function (req, res, next) {
-  // verify the action
-  if (req.params.action === undefined || ACTIONS[req.params.action] === undefined) {
-    return res.status(404).json({ status: 'error', msg: 'Invalid action to perform' });
-  }
-
-  var form = new multipart.Form();
-  form.parse(req, function (err, fields, files) {
-    if (err) return res.status(404).json({ status: 'error', msg: 'Cant parse body.' });
-
-    req.body = fields
-
-    // try to decrypt the post data using RSA private key and parse it to json
-    try {
-      var data = JSON.parse(RSAkeyAPI.decrypt(Buffer.from(fields['0'][0], 'base64')));
-    } catch (exception) {
-      return res.status(400).json({ status: 'error', msg: exception.message })
-    }
-
-    // verify that it contain all the info we need
-    if (data.id === undefined || data.key === undefined || data.domain === undefined)
-      return res.status(500).json({ status: 'error', msg: 'Data not complete' })
-
-    License.findOne({ id: data.id, key: data.key }).populate(['user', 'hosting']).exec(function (err, license) {
-      // if the license isnt found, search for a hosting license
-      if (license === undefined) {
-        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'Invalid ID or Key', data: data }, function (err, log) { })
-        return res.json({ status: 'error', msg: 'ID_OR_KEY_INVALID' })
-      }
-
-      var type = license.hosting !== null ? 'license' : 'hosting';
-
-      // verify that license hasnt been disabled by us
-      if (license.suspended !== null && license.suspended.length > 0) {
-        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'License suspended', license: license.id, data: data }, function (err, log) { })
-        return res.json({ status: false, msg: 'LICENSE_DISABLED' })
-      }
-
-      // verify that the license/hosting isnt disabled by user
-      if (license.state === false) {
-        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'License disabled by user', license: license.id, data: data }, function (err, log) { })
-        return res.json({ status: 'error', msg: 'LICENSE_DISABLED' })
-      }
-
-      // verify that the input domain is a valid one
-      if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false) {
-        Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, license: license.id, data: data }, function (err, log) { })
-        return res.json({ status: 'error', msg: 'INVALID_URL' })
-      }
-
-      // normalize last slash in domain
-      if (license.host) {
-        license.host = license.host[license.host.length - 1] === '/' ? license.host.substr(0, license.host.length - 1) : license.host;
-        data.domain = data.domain[data.domain.length - 1] === '/' ? data.domain.substr(0, data.domain.length - 1) : data.domain;
-
-        var domain = license.host.toLowerCase();
-        var input_domain = data.domain.toLowerCase();
-
-        // normalize domain in the db
-        if (domain.hosting && domain.hosting.hostType === 'SUBDOMAIN')
-          domain = 'http://' + domain + ".craftwb.fr";
-        else if (domain.hosting && domain.hosting.hostType === 'DOMAIN')
-          domain = 'http://' + domain;
-        else if (domain.indexOf('www.') !== -1)
-          domain = domain.replace('www.', '');
-
-        if (input_domain.indexOf('www.') !== -1)
-          input_domain = input_domain.replace('www.', '');
-
-        // verify that domain match
-        if (input_domain !== domain) {
-          Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: false, error: 'Domain doesnt match', license: license.id, data: data }, function (err, log) { })
-          return res.json({ status: 'error', msg: 'INVALID_URL' });
-        }
-      }
-      // its all good, log the request and pass the request to the actual route
-      Log.create({ action: ACTIONS[req.params.action], api_version: 1, ip: req.ip, status: true, license: license.id, data: data }, function (err, log) { })
-      req.model = license;
-      req.type = type;
-      req.domain = domain || 'none';
-      req.user = license.user;
-
-      return next()
-    })
-  });
-});
 
 var themeRoutes = require('./themes')
 var pluginRoutes = require('./plugins')
@@ -131,9 +31,9 @@ router.get('/get_update', function (req, res) {
 })
 
 /** Route linked to download */
-router.post('/update', downloadRoutes.get_cms)
-router.post('/get_theme/:apiID', downloadRoutes.get_theme)
-router.post('/get_plugin/:apiID', downloadRoutes.get_plugin)
+router.post('/update', ensurePostReq, downloadRoutes.get_cms)
+router.post('/get_theme/:apiID', ensurePostReq, downloadRoutes.get_theme)
+router.post('/get_plugin/:apiID', ensurePostReq, downloadRoutes.get_plugin)
 
 /** Route linked to plugins */
 router.get('/getFreeThemes', themeRoutes.getFreeThemes)
@@ -146,7 +46,7 @@ router.get('/getAllPlugins', pluginRoutes.getAllPlugins)
 router.get('/getPurchasedPlugins/:licenseID', pluginRoutes.getPurchasedPlugins)
 
 /** Used to verify that the license used is valid */
-router.post('/key_verif', function (req, res) {
+router.post('/key_verif', ensurePostReq, function (req, res) {
   var data = { time: Math.floor(new Date().getTime() / 1000), domain: req.domain };
 
   //Serialize
@@ -164,7 +64,7 @@ router.post('/key_verif', function (req, res) {
 })
 
 /** Used to get the secret key to communicate between the CMS and the minecraft plugin  */
-router.post('/get_secret_key', function (req, res) {
+router.post('/get_secret_key', ensurePostReq, function (req, res) {
   // if the license/hosting doesnt have secret key, generate one for him
   if (req.model.secretKey === null) {
     req.model.secretKey = "";
@@ -186,7 +86,7 @@ router.post('/get_secret_key', function (req, res) {
 })
 
 /** Used to create a ticket from CMS  */
-router.post('/addTicket', function (req, res) {
+router.post('/addTicket', ensurePostReq, function (req, res) {
 
   var data = req.body.debug,
     content = req.body.content,
@@ -232,7 +132,7 @@ router.get('/getFAQ/:lang*?', function (req, res) {
   Faq.find({lang: lang}).exec(function (err, questions) {
     if (err) return res.json([])
 
-    return res.json(questions);
+    return res.json(questions || []);
   })
 })
 

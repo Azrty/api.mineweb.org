@@ -1,3 +1,10 @@
+var NodeRSA = require('node-rsa');
+var fs = require('fs');
+var path = require('path');
+
+var private_key = fs.readFileSync(path.resolve(__dirname, '../../secret/private.key'));
+var RSAkeyAPI = new NodeRSA(private_key, 'private');
+
 module.exports = function (req, res, next) {
   // verify that the request contains the signed field
   if (req.body.signed === undefined) {
@@ -15,7 +22,7 @@ module.exports = function (req, res, next) {
   if (data.id === undefined || data.key === undefined || data.domain === undefined)
     return res.status(500).json({ status: 'error', msg: 'Data not complete' })
 
-  var path = req.path.replace('/api/v2/', '')
+  var path = req.path.replace('/api/v2/', '');
 
   License.findOne({ id: data.id, key: data.key }).populate('user', 'hosting').exec(function (err, license) {
     // if the license isnt found, search for a hosting license
