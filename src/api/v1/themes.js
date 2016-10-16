@@ -4,6 +4,8 @@ var transform = function (themes) {
   var transformed = {};
 
   themes.forEach(function (theme) {
+    if (!theme.author || !theme.author.username) return ;
+    
     // push the old format to the returned array
     transformed[theme.author.username.toLowerCase() + '.' + theme.slug.toLowerCase() + '.' + theme.id] = {
       apiID: theme.id,
@@ -23,7 +25,7 @@ module.exports = {
 
   /** Get all themes **/
   getAllThemes: function (req, res) {
-    Theme.find().populate('author').exec(function (err, themes) {
+    Theme.find({ state: 'CONFIRMED' }).populate('author').exec(function (err, themes) {
       if (err)
         return res.json([]);
       return res.json(transform(themes))
@@ -32,7 +34,7 @@ module.exports = {
 
   /** Get all free theme **/
   getFreeThemes: function (req, res) {
-    Theme.find({ price: 0 }).populate('author').exec(function (err, themes) {
+    Theme.find({  state: 'CONFIRMED', price: 0 }).populate('author').exec(function (err, themes) {
       if (err)
         return res.json([]);
       return res.json(transform(themes))
@@ -60,7 +62,7 @@ module.exports = {
         })
 
         // query all of them
-        Theme.find({ id: theme_ids }).populate('author').exec(function (err, themes) {
+        Theme.find({  state: 'CONFIRMED', id: theme_ids }).populate('author').exec(function (err, themes) {
           if (themes === undefined || themes.length === 0)
             return res.json([]);
           else

@@ -16,17 +16,20 @@ module.exports = {
         return res.status(404).json({ status: false, error: 'Not Found' });
 
       var path = getFilePath('cms_mineweb_' + result.version);
-      var size = fs.statSync(path)
-      var stream = fs.createReadStream(path)
+      
+      var size = fs.stat(path, function (err, data) {
+        if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
 
-      // write header
+        var stream = fs.createReadStream(path)
+        // write header
         res.writeHead(200, {
           'Content-Type': 'application/zip',
-          'Content-Length': size,
+          'Content-Length': data.size,
           'Content-Disposition': 'attachment; filename=MinewebCMS' + '_' + result.version});
 
-      // stream the file to the response
-      pump(stream, res);
+        // stream the file to the response
+        pump(stream, res);
+      })
     });
   },
 
@@ -44,17 +47,22 @@ module.exports = {
 
       var trigger_download = function () {
         var path = getFilePath('PLUGIN_' + plugin.slug + '_' + plugin.version);
-        var size = fs.statSync(path)
-        var stream = fs.createReadStream(path)
 
-        // write header
-        res.writeHead(200, {
-          'Content-Type': 'application/zip',
-          'Content-Length': size,
-          'Content-Disposition': 'attachment; filename=' + plugin.slug + '_' + plugin.version});
+        var size = fs.stat(path, function (err, data) {
+          if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
 
-        // stream the file to the response
-        pump(stream, res);
+          var stream = fs.createReadStream(path)
+
+          // write header
+          res.writeHead(200, {
+            'Content-Type': 'application/zip',
+            'Content-Length': data.size,
+            'Content-Disposition': 'attachment; filename=' + plugin.slug + '_' + plugin.version});
+
+          // stream the file to the response
+          pump(stream, res);
+        })
+        
 
         // add a download to the plugin
         plugin.downloads = plugin.downloads + 1;
@@ -91,17 +99,22 @@ module.exports = {
 
       var trigger_download = function () {
         var path = getFilePath('theme_' + theme.slug + '_' + theme.version);
-        var size = fs.statSync(path)
-        var stream = fs.createReadStream(path)
 
-        // write header
-        res.writeHead(200, {
-          'Content-Type': 'application/zip',
-          'Content-Length': size,
-          'Content-Disposition': 'attachment; filename=' + theme.slug + '_' + theme.version});
+        var size = fs.stat(path, function (err, data) {
+          if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
 
-        // stream the file to the response
-        pump(stream, res);
+          var stream = fs.createReadStream(path)
+
+          // write header
+          res.writeHead(200, {
+            'Content-Type': 'application/zip',
+            'Content-Length': data.size,
+            'Content-Disposition': 'attachment; filename=' + theme.slug + '_' + theme.version});
+
+          // stream the file to the response
+          pump(stream, res);
+        })
+        
 
         // add a download to the theme
         theme.downloads = theme.downloads + 1;

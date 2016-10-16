@@ -1,3 +1,5 @@
+
+var pmx         = require('pmx');
 var express     = require('express')
 var path        = require('path')
 var bodyParser  = require('body-parser')
@@ -9,7 +11,6 @@ var expressLog  = require('express-winston');
 var ESTransport = require('winston-elasticsearch');
 
 var app         = express();
-var pmx         = require('pmx');
 
 var TRANSPORTS = [];
 
