@@ -134,7 +134,7 @@ router.get('/get_update', function (req, res) {
 /** Route linked to download */
 router.post('/update', downloadRoutes.get_cms)
 router.post('/get_theme', downloadRoutes.get_theme)
-router.post('/get_plugin', downloadRoutes.get_plugin)
+router.post('/get_plugin/:apiID', downloadRoutes.get_plugin)
 
 /** Route linked to plugins */
 router.get('/getFreeThemes', themeRoutes.getFreeThemes)
