@@ -13,7 +13,7 @@ module.exports = function (req, res, next) {
 
   // try to decrypt the post data using RSA private key and parse it to json
   try {
-    var data = JSON.parse(RSAkeyAPI.decrypt(req.body.signed));
+    var data = JSON.parse(RSAkeyAPI.decrypt(req.body));
   } catch (exception) {
     return res.status(400).json({ status: 'error', msg: 'Could not decrypt signed content' })
   }

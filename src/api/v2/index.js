@@ -48,7 +48,7 @@ router.post('/verification', ensurePostReq, function (req, res) {
 })
 
 /** Used to get the secret key to communicate between the CMS and the minecraft plugin  */
-router.post('/secretKey', ensurePostReq, function (req, res) {
+router.post('/key', ensurePostReq, function (req, res) {
   // if the license/hosting doesnt have secret key, generate one for him
   if (req.model.secretKey === null) {
     req.model.secretKey = "";
