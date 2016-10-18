@@ -18,7 +18,7 @@ var pluginRoutes = require('./plugins')
 var downloadRoutes = require('../download')
 
 /** Get the latest release of the cms  */
-router.get('/get_update', function (req, res) {
+router.get('/get_update*', function (req, res) {
   Version.findOne({ state: 'RELEASE' }).sort('id DESC').exec(function (err, version) {
     if (err || !version)
       return res.status(404).json({ status: false, error: 'Not Found' });
@@ -119,7 +119,7 @@ router.post('/addTicket', ensurePostReq, function (req, res) {
 })
 
 /** Useless route but can be call so just send empty array */
-router.get('/getCustomMessage', function (req, res) {
+router.post('/getCustomMessage', ensurePostReq, function (req, res) {
   return res.json([]);
 })
 
