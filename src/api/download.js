@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var pump = require('pump');
+var JSZip = require('jszip');
 
 // simple function to return the exact path of a file
 var getFilePath = function (name) {
@@ -11,8 +12,10 @@ module.exports = {
 
   /** Download the last version of cms */
   get_cms: function (req, res) {
-    if (!req.license)
+    if (!req.license) {
+      req.license = {}
       req.license.id = req.body.license_id || req.query.license_id;
+    }
     
     Version.findOne({ state: 'RELEASE' }).sort('id DESC').exec(function (err, result) {
       if (err || !result)
@@ -31,7 +34,7 @@ module.exports = {
           // Send headers
           res.writeHead(200, {
             'Content-Type': 'application/zip',
-            'Content-Disposition': 'attachment; filename=MineWebCMS-' + version + '.zip'
+            'Content-Disposition': 'attachment; filename=MineWebCMS-' + result.version + '.zip'
           })
 
           // stream zip contnet to response

@@ -3,7 +3,9 @@ var router = express.Router();
 var multer = require('multer')
 var path = require('path');
 var JSZip = require("jszip");
+var pump = require('pump');
 var pmx = require('pmx');
+var fs = require('fs');
 
 // upload wrapper
 var upload = multer({
@@ -20,7 +22,7 @@ var upload = multer({
 
 // handle upload call
 router.post('/upload', upload.single('file'), function (req, res, next) {
-  if (req.ip !== "51.255.36.20") return res.sendStatus(404);
+  if (req.ip.indexOf("51.255.36.20") === -1) return res.sendStatus(404);
 
   var type = req.body.type, version = req.body.version, slug = req.body.slug, id = req.body.id;
 

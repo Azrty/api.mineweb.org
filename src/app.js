@@ -47,9 +47,9 @@ app.use(expressLog.logger({
     if (propName === 'headers')
       return { agent: data["user-agent"], language: data["accept-language"], origin: data.origin, host: data.host }
     if (propName === 'user')
-      return data ? data.id.toString() : undefined;
+      return data && data.id ? data.id.toString() : undefined;
     if (propName === 'license')
-      return data ? data.id.toString() : undefined;
+      return data && data.id ? data.id.toString() : undefined;
 
     return req[propName];
   },
