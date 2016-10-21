@@ -66,19 +66,19 @@ router.post('/key_verif', ensurePostReq, function (req, res) {
 /** Used to get the secret key to communicate between the CMS and the minecraft plugin  */
 router.post('/get_secret_key', ensurePostReq, function (req, res) {
   // if the license/hosting doesnt have secret key, generate one for him
-  if (req.model.secretKey === null) {
-    req.model.secretKey = "";
+  if (req.license.secretKey === null) {
+    req.license.secretKey = "";
     var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
 
     for (var i = 0; i < 32; i++)
-      req.model.secretKey += possible.charAt(Math.floor(Math.random() * possible.length));
+      req.license.secretKey += possible.charAt(Math.floor(Math.random() * possible.length));
 
-    req.model.save(function (err) { })
+    req.license.save(function (err) { })
   }
 
   // encrypt and send the key
   try {
-    var encoded = RSAkeyCMS.encrypt(req.model.secretKey, 'base64');
+    var encoded = RSAkeyCMS.encrypt(req.license.secretKey, 'base64');
   } catch (exception) {
     return res.status(500).json({ status: 'error', error: exception.message })
   }
@@ -96,7 +96,7 @@ router.post('/addTicket', ensurePostReq, function (req, res) {
   if (data === undefined || content === undefined || title === undefined || title.length === 0 || content.length === 0)
     return res.sendStatus(200);
 
-  data.id = req.model.id;
+  data.id = req.license.id;
   data.type = req.type;
 
   // log data put by the cms
@@ -107,7 +107,7 @@ router.post('/addTicket', ensurePostReq, function (req, res) {
     user: req.user,
     title: title,
     category: 'OTHER',
-    license: req.model
+    license: req.license
   }, function (err, ticket) {
     if (err) return res.sendStatus(200);
 

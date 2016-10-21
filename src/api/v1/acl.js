@@ -83,7 +83,7 @@ module.exports = function (req, res, next) {
 
       // its all good, log the request and pass the request to the actual route
       Log.create({ action: path, api_version: 1, ip: req.ip, status: true, license: license.id, data: data }, function (err, log) { })
-      req.model = license;
+      req.license = license;
       req.type = type;
       req.domain = domain || 'none';
       req.user = license.user;

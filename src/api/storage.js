@@ -1,23 +1,13 @@
-var express     = require('express');
-var router      = express.Router();
-var multer      = require('multer')
-var path        = require('path')
-
-// storage engine
-var storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    // dir to upload
-    cb(null, path.join(__dirname, '../public'))
-  },
-  filename: function (req, file, cb) {
-    // file name
-    cb(null, req.body.type + '_' + req.body.slug + '_' + req.body.version);
-  }
-})
+var express = require('express');
+var router = express.Router();
+var multer = require('multer')
+var path = require('path');
+var JSZip = require("jszip");
+var pmx = require('pmx');
 
 // upload wrapper
 var upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(),
   fileFilter: function (req, file, cb) {
     // accept only zip file
     if (file.mimetype !== 'application/zip')
@@ -30,14 +20,30 @@ var upload = multer({
 
 // handle upload call
 router.post('/upload', upload.single('file'), function (req, res, next) {
-  var type = req.body.type,
-      version = req.body.version,
-      slug = req.body.slug;
-  
-  if (!type || !version || !slug)
+  if (req.ip !== "51.255.36.20") return res.sendStatus(404);
+
+  var type = req.body.type, version = req.body.version, slug = req.body.slug, id = req.body.id;
+
+  if (!type || !version || !slug | !id)
     return res.sendStatus(400);
-  else
-    return res.json(req.file);
+
+  JSZip.loadAsync(req.file.buffer).then(function (zip) {
+    var folder = slug.substr(0, 1).toUpperCase() + slug.substr(1);
+
+    zip.folder(folder).file('config.json').async('string').then(function (config) {
+      config = JSON.parse(config);
+      config.apiID = id;
+      zip.folder(folder).file('config.json', JSON.stringify(config))
+
+      var file_name = type + "_" + slug + "_" + version + ".zip";
+
+      pump(zip.generateNodeStream({ streamFiles: true }), fs.createWriteStream(path.normalize(__dirname, '../public/', file_name)));
+      return res.sendStatus(200);
+    }).then(function (error) {
+      res.sendStatus(500);
+      return pmx.notify(error);
+    })
+  })
 })
 
 module.exports = router;
