@@ -1,47 +1,61 @@
+var pmx = require('pmx');
 
-var pmx         = require('pmx');
-var express     = require('express')
-var path        = require('path')
-var bodyParser  = require('body-parser')
-var http        = require('http')
-var orm         = require('./db/orm.js')
+var express = require('express')
+var path = require('path')
+var bodyParser = require('body-parser')
+var http = require('http')
+var orm = require('./db/orm.js')
 
-var winston     = require('winston');
-var expressLog  = require('express-winston');
+var winston = require('winston');
+var expressLog = require('express-winston');
 var ESTransport = require('winston-elasticsearch');
+var logsMapping = require('./secret/log_mapping.json');
 
-var app         = express();
+var app = express();
 
 var TRANSPORTS = [];
 
 if (process.env.NODE_ENV === 'production') {
-  var elasticTransport = new ESTransport({ level: 'info', index: 'api-express', clientOpts: { host: process.env.ELASTIC_HOST + ':' + process.env.ELASTIC_PORT }});
+  var elasticTransport = new ESTransport({
+    level: 'info',
+    indexPrefix: 'api-express',
+    mappingTemplate: logsMapping,
+    clientOpts: { host: process.env.ELASTIC_HOST + ':' + process.env.ELASTIC_PORT, apiVersion: 'master' },
+    transformer: function (logData) {
+      const transformed = {};
+      transformed['@timestamp'] = new Date().toISOString();
+      transformed['@level'] = logData.level;
+      transformed['@version'] = 1;
+      transformed.fields = logData.meta;
+      return transformed;
+    }
+  });
 
   elasticTransport.emitErrs = true;
-  elasticTransport.on('error', function (err) {
-      pmx.notify(err);
-  });
+  elasticTransport.on('error', pmx.notify);
   TRANSPORTS.push(elasticTransport)
 }
 else
   TRANSPORTS.push(new winston.transports.Console({ json: true, colorize: true }))
 
 // enable logging of express
-app.use(
-  expressLog.logger({
-      transports: TRANSPORTS,
-      meta: true,
-      msg: '',
-      expressFormat: true, 
-      colorize: true,
-      ignoredRoutes: ['/favicon.ico'],
-      requestFilter: function (req, propName) {
-        var data = req[propName];
-        // filter headers to only get lang / user-agent
-        if (propName === 'headers') return { "user-agent": data["user-agent"], "accept-language" : data["accept-language"] }
-        return req[propName]; 
-      }
-  }));
+app.use(expressLog.logger({
+  transports: TRANSPORTS,
+  meta: true,
+  requestFilter: function (req, propName) {
+    var data = req[propName];
+    if (propName === 'headers')
+      return { agent: data["user-agent"], language: data["accept-language"], origin: data.origin, host: data.host }
+    if (propName === 'user')
+      return data ? data.id.toString() : undefined;
+    if (propName === 'license')
+      return data ? data.id.toString() : undefined;
+
+    return req[propName];
+  },
+  requestWhitelist: ['url', 'headers', 'method', 'originalUrl', 'user', 'license', 'ip'],
+  responseWhitelist: ['statusCode']
+}));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
@@ -56,31 +70,23 @@ app.get('/', function (req, res) {
 })
 
 // handling 404
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.sendStatus(404);
 });
 
-// error logging
-app.use(
-  expressLog.errorLogger({
-      transports: TRANSPORTS,
-      meta: true,
-      expressFormat: true, 
-      colorize: true,
-      ignoredRoutes: ['/favicon.ico']
-  }));
-
 // handling 500 error in dev env
-if (app.get('env') === 'development')
-  app.use(function(err, req, res, next) {
+if (app.get('env') === 'development') 
+  app.use(function (err, req, res, next) {
     return res.status(err.status || 500).json({ message: err.message, error: err });
   });
 // handling 500 error in prod denv
-else
-  app.use(function(err, req, res, next) {
+else {
+  app.use(pmx.expressErrorHandler());
+  app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     next(err)
   });
+}
 
 var onReady = function (err, waterline) {
   if (err) return console.log(err)
@@ -94,7 +100,7 @@ var onReady = function (err, waterline) {
   // start http server
   var server = http.createServer(app);
   server.listen(process.env.PORT || 8080);
-  server.on('error', function(err) {
+  server.on('error', function (err) {
     throw err;
   });
 
