@@ -22,6 +22,7 @@ router.get('/cms/version', function (req, res) {
 })
 
 /** Route linked to download */
+router.post('/cms/latest', downloadRoutes.get_cms)
 router.post('/cms/update', ensurePostReq, downloadRoutes.get_cms)
 router.post('/theme/download', ensurePostReq, downloadRoutes.get_theme)
 router.post('/plugin/download', ensurePostReq, downloadRoutes.get_plugin)

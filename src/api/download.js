@@ -11,11 +11,14 @@ module.exports = {
 
   /** Download the last version of cms */
   get_cms: function (req, res) {
+    if (!req.license)
+      req.license.id = req.body.license_id || req.query.license_id;
+    
     Version.findOne({ state: 'RELEASE' }).sort('id DESC').exec(function (err, result) {
       if (err || !result)
         return res.status(404).json({ status: false, error: 'Not Found' });
 
-      var path = getFilePath('cms_mineweb_' + result.version);
+      var path = getFilePath('cms_mineweb_' + result.version + ".zip");
 
       var size = fs.readFile(path, function (err, data) {
         if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
@@ -51,7 +54,7 @@ module.exports = {
         return res.json({ status: 'error', msg: 'INVALID_PLUGIN_ID' });
 
       var trigger_download = function () {
-        var path = getFilePath('PLUGIN_' + plugin.slug + '_' + plugin.version);
+        var path = getFilePath('PLUGIN_' + plugin.slug + '_' + plugin.version + ".zip");
 
         var size = fs.stat(path, function (err, data) {
           if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
@@ -61,8 +64,7 @@ module.exports = {
           // write header
           res.writeHead(200, {
             'Content-Type': 'application/zip',
-            'Content-Length': data.size,
-            'Content-Disposition': 'attachment; filename=' + plugin.slug + '_' + plugin.version
+            'Content-Length': data.size
           });
 
           // stream the file to the response
@@ -104,7 +106,7 @@ module.exports = {
         return res.json({ status: 'error', msg: 'INVALID_THEME_ID' });
 
       var trigger_download = function () {
-        var path = getFilePath('THEME_' + theme.slug + '_' + theme.version);
+        var path = getFilePath('THEME_' + theme.slug + '_' + theme.version + ".zip");
 
         var size = fs.stat(path, function (err, data) {
           if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
@@ -114,8 +116,7 @@ module.exports = {
           // write header
           res.writeHead(200, {
             'Content-Type': 'application/zip',
-            'Content-Length': data.size,
-            'Content-Disposition': 'attachment; filename=' + theme.slug + '_' + theme.version
+            'Content-Length': data.size
           });
 
           // stream the file to the response
