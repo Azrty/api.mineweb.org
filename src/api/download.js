@@ -1,6 +1,6 @@
-var fs      = require('fs');
-var path    = require('path');
-var pump    = require('pump');
+var fs = require('fs');
+var path = require('path');
+var pump = require('pump');
 
 // simple function to return the exact path of a file
 var getFilePath = function (name) {
@@ -11,24 +11,29 @@ module.exports = {
 
   /** Download the last version of cms */
   get_cms: function (req, res) {
-    Version.findOne({state: 'RELEASE'}).sort('id DESC').exec(function(err, result) {
+    Version.findOne({ state: 'RELEASE' }).sort('id DESC').exec(function (err, result) {
       if (err || !result)
         return res.status(404).json({ status: false, error: 'Not Found' });
 
       var path = getFilePath('cms_mineweb_' + result.version);
 
-      var size = fs.stat(path, function (err, data) {
+      var size = fs.readFile(path, function (err, data) {
         if (err) return res.status(404).json({ status: false, error: 'File Not Found' });
 
-        var stream = fs.createReadStream(path)
-        // write header
-        res.writeHead(200, {
-          'Content-Type': 'application/zip',
-          'Content-Length': data.size,
-          'Content-Disposition': 'attachment; filename=MinewebCMS' + '_' + result.version});
+        JSZip.loadAsync(data).then(function (zip) { // create object from zip content
 
-        // stream the file to the response
-        pump(stream, res);
+          // Modify LICENSE_ID into /config/secure
+          zip.file('config/secure', '{"id": "' + req.license.id + '","key": "NOT_INSTALL"}')
+
+          // Send headers
+          res.writeHead(200, {
+            'Content-Type': 'application/zip',
+            'Content-Disposition': 'attachment; filename=MineWebCMS-' + version + '.zip'
+          })
+
+          // stream zip contnet to response
+          zip.generateNodeStream({ streamFiles: true, compression: 'DEFLATE' }).pipe(res).on('finish', res.send);
+        })
       })
     });
   },
@@ -57,7 +62,8 @@ module.exports = {
           res.writeHead(200, {
             'Content-Type': 'application/zip',
             'Content-Length': data.size,
-            'Content-Disposition': 'attachment; filename=' + plugin.slug + '_' + plugin.version});
+            'Content-Disposition': 'attachment; filename=' + plugin.slug + '_' + plugin.version
+          });
 
           // stream the file to the response
           pump(stream, res);
@@ -66,7 +72,7 @@ module.exports = {
 
         // add a download to the plugin
         plugin.downloads = plugin.downloads + 1;
-        plugin.save(function (err) {});
+        plugin.save(function (err) { });
       }
 
       // if the plugin is paid, verify that he paid it
@@ -109,7 +115,8 @@ module.exports = {
           res.writeHead(200, {
             'Content-Type': 'application/zip',
             'Content-Length': data.size,
-            'Content-Disposition': 'attachment; filename=' + theme.slug + '_' + theme.version});
+            'Content-Disposition': 'attachment; filename=' + theme.slug + '_' + theme.version
+          });
 
           // stream the file to the response
           pump(stream, res);
@@ -118,7 +125,7 @@ module.exports = {
 
         // add a download to the theme
         theme.downloads = theme.downloads + 1;
-        theme.save(function (err) {});
+        theme.save(function (err) { });
       }
 
       // if the theme is paid, verify that he paid it
