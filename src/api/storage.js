@@ -41,9 +41,6 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
 
       pump(zip.generateNodeStream({ streamFiles: true }), fs.createWriteStream(path.normalize(__dirname, '../public/', file_name)));
       return res.sendStatus(200);
-    }).then(function (error) {
-      res.sendStatus(500);
-      return pmx.notify(error);
     })
   })
 })
