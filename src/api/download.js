@@ -12,11 +12,12 @@ module.exports = {
 
   /** Download the last version of cms */
   get_cms: function (req, res) {
-    if (!req.license) {
+    if (!req.license) { // called by mineweb.org
+      if (req.ip.indexOf("51.255.36.20") === -1) return res.sendStatus(404);
       req.license = {}
       req.license.id = req.body.license_id || req.query.license_id;
     }
-    
+
     Version.findOne({ state: 'RELEASE' }).sort('id DESC').exec(function (err, result) {
       if (err || !result)
         return res.status(404).json({ status: false, error: 'Not Found' });
