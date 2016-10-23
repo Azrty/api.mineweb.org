@@ -13,6 +13,12 @@ var config = {
       user: process.env.MYSQL_USER,
       password: process.env.MYSQL_PWD,
       database: process.env.MYSQL_DB
+    },
+    'mongodb': {
+      adapter: 'sails-mongo',
+      host: process.env.MONGO_HOST,
+      port: process.env.MONGO_PORT,
+      database: process.env.MONGO_DB
     }
   },
   defaults: {
@@ -20,16 +26,6 @@ var config = {
     connection: 'mysql'
   }
 };
-
-// if we are in production mode
-if (process.env.NODE_ENV === 'production') {
-  config.connections.mongodb = {
-    adapter: 'sails-mongo',
-    host: process.env.MONGO_HOST,
-    port: process.env.MONGO_PORT,
-    database: process.env.MONGO_DB
-  }
-}
 
 module.exports = {
   init: function (callback) {
@@ -42,7 +38,8 @@ module.exports = {
     models.forEach(function (name) {
       var model = require('./models/' + name + ".js");
       model.identity = name.toLowerCase();
-      model.connection = 'mysql'
+      if (!model.connection)
+        model.connection = 'mysql'
       waterline.loadCollection(Waterline.Collection.extend(model));
     })
 
