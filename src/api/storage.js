@@ -34,7 +34,7 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
 
     zip.folder(folder).file('config.json').async('string').then(function (config) {
       config = JSON.parse(config);
-      config.apiID = id;
+      config.apiID = parseInt(id);
       zip.folder(folder).file('config.json', JSON.stringify(config))
 
       var file_name = type + "_" + slug + "_" + version + ".zip";
