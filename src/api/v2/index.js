@@ -85,7 +85,7 @@ router.post('/ticket/add', ensurePostReq, function (req, res) {
   data.type = req.type;
 
   // log data put by the cms
-  Log.create({ action: 'DEBUG', ip: req.ip, api_version: 2, status: true, type: req.type.toUpperCase(), data: data }, function (err, log) {})
+  ApiLog.create({ action: 'DEBUG', ip: req.ip, api_version: 2, status: true, type: req.type.toUpperCase(), data: data }, function (err, log) {})
 
   // create the ticket
   var ticket = {
