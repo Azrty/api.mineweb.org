@@ -31,12 +31,12 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
 
   JSZip.loadAsync(req.file.buffer).then(function (zip) {
     var folder = slug.substr(0, 1).toUpperCase() + slug.substr(1);
-    if (type == 'THEME') folder += '/Config'
+    var zipFolder = (type == 'THEME') ? zip.folder(folder).folder('Config') : zip.folder(folder)
 
-    zip.folder(folder).file('config.json').async('string').then(function (config) {
+    zipFolder.file('config.json').async('string').then(function (config) {
       config = JSON.parse(config);
       config.apiID = parseInt(id);
-      zip.folder(folder).file('config.json', JSON.stringify(config))
+      zipFolder.file('config.json', JSON.stringify(config))
 
       var file_name = type + "_" + slug + "_" + version + ".zip";
 
