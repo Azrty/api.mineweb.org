@@ -9,9 +9,7 @@ var express = require('express')
 var path = require('path')
 var bodyParser = require('body-parser')
 var http = require('http')
-var https = require('https');
 var orm = require('./db/orm.js')
-var fs  = require('fs');
 
 var winston = require('winston');
 var expressLog = require('express-winston');
@@ -106,25 +104,10 @@ var onReady = function (err, waterline) {
 
   // start http server
   var http_server = http.createServer(app);
-  var https_server = https.createServer({ 
-    key : fs.readFileSync('src/secret/key.pem', 'utf8'),
-    cert: fs.readFileSync('src/secret/cert.pem', 'utf8')
-  }, app);
 
   http_server.listen(process.env.PORT || 8080);
   http_server.on('error', function (err) {
     throw err;
-  });
-
-  // start https server only in production
-  https_server.listen(process.env.HTTPS_PORT || 8443);
-  https_server.on('error', function (err) {
-    throw err;
-  });
-
-  https_server.on('listening', function () {
-    console.log("HTTPS API is ready to handle request");
-    process.send('ready');
   });
 
   // when the http server is ready, tell pm2 its good
