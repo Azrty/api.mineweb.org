@@ -31,7 +31,7 @@ module.exports = function (req, res, next) {
     License.findOne({ id: data.id, key: data.key }).populate(['user', 'hosting']).exec(function (err, license) {
       // if the license isnt found, search for a hosting license
       if (license === undefined) {
-        ApiLog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'Invalid ID or Key', data: data }, function (err, log) { })
+        Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'Invalid ID or Key', data: data }, function (err, log) { })
         return res.json({ status: 'error', msg: 'ID_OR_KEY_INVALID' })
       }
 
@@ -39,19 +39,19 @@ module.exports = function (req, res, next) {
 
       // verify that license hasnt been disabled by us
       if (license.suspended !== null && license.suspended.length > 0) {
-        ApiLog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'License suspended', license: license.id, data: data }, function (err, log) { })
+        Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'License suspended', license: license.id, data: data }, function (err, log) { })
         return res.json({ status: false, msg: 'LICENSE_DISABLED' })
       }
 
       // verify that the license/hosting isnt disabled by user
       if (license.state === false) {
-        ApiLog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'License disabled by user', license: license.id, data: data }, function (err, log) { })
+        Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'License disabled by user', license: license.id, data: data }, function (err, log) { })
         return res.json({ status: 'error', msg: 'LICENSE_DISABLED' })
       }
 
       // verify that the input domain is a valid one
       if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false) {
-        ApiLog.create({ action: path, api_version: 1, ip: req.ip, status: false, license: license.id, data: data }, function (err, log) { })
+        Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, license: license.id, data: data }, function (err, log) { })
         return res.json({ status: 'error', msg: 'INVALID_URL' })
       }
 
@@ -76,13 +76,13 @@ module.exports = function (req, res, next) {
 
         // verify that domain match
         if (input_domain !== domain) {
-          ApiLog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'Domain doesnt match', license: license.id, data: data }, function (err, log) { })
+          Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'Domain doesnt match', license: license.id, data: data }, function (err, log) { })
           return res.json({ status: 'error', msg: 'INVALID_URL' });
         }
       }
 
       // its all good, log the request and pass the request to the actual route
-      ApiLog.create({ action: path, api_version: 1, ip: req.ip, status: true, license: license.id, data: data }, function (err, log) { })
+      Apilog.create({ action: path, api_version: 1, ip: req.ip, status: true, license: license.id, data: data }, function (err, log) { })
       req.license = license;
       req.type = type;
       req.domain = domain || 'none';
