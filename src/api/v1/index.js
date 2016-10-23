@@ -107,7 +107,7 @@ router.post('/addTicket', ensurePostReq, function (req, res) {
     user: req.user,
     title: title,
     category: 'OTHER',
-    license: req.license
+    license: req.license.id
   }, function (err, ticket) {
     if (err) return res.sendStatus(200);
 

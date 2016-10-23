@@ -1,4 +1,9 @@
-var pmx = require('pmx');
+var pmx = require('pmx').init({
+  http          : true,
+  errors        : true, 
+  custom_probes : true, 
+  network       : true,
+});
 
 var express = require('express')
 var path = require('path')
