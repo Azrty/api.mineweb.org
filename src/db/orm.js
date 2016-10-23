@@ -36,7 +36,7 @@ module.exports = {
     // new instance
     var waterline = new Waterline();
 
-    var models = ['Question', 'Log', 'License', 'Hosting', 'Plugin', 'Theme', 'User', 'Purchase', 'Version', 'Faq',
+    var models = ['Question', 'ApiLog', 'UserLog', 'License', 'Hosting', 'Plugin', 'Theme', 'User', 'Purchase', 'Version', 'Faq',
       'Ticket', 'TicketReply', 'Token', 'RememberTokens', 'PayPalHistory', 'Pushbullet', 'DedipassHistory', 'Voucher'];
     // import models
     models.forEach(function (name) {

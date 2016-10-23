@@ -39,8 +39,11 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
 
       var file_name = type + "_" + slug + "_" + version + ".zip";
 
-      pump(zip.generateNodeStream({ streamFiles: true }), fs.createWriteStream(path.normalize(__dirname, '../public/', file_name)));
-      return res.sendStatus(200);
+      zip.generateNodeStream({ streamFiles: true, compression: 'DEFLATE' }).pipe(fs.createWriteStream(path.resolve(__dirname, '../public/', file_name))).on('finish', function () {
+        res.send()
+      })
+      //pump(zip.generateNodeStream({ streamFiles: true }), fs.createWriteStream(path.normalize(__dirname, '../public/', file_name)));
+      //return res.sendStatus(200);
     })
   })
 })
