@@ -80,6 +80,9 @@ module.exports = function (req, res, next) {
           return res.json({ status: 'error', msg: 'INVALID_URL' });
         }
       }
+      else { // License installation, setup domain
+        License.update({id: license.id}, {host: data.domain}).exec(function () {})
+      }
 
       // its all good, log the request and pass the request to the actual route
       Apilog.create({ action: path, api_version: 1, ip: req.ip, status: true, license: license.id, data: data }, function (err, log) { })
