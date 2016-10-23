@@ -40,7 +40,7 @@ module.exports = function (req, res, next) {
       // verify that license hasnt been disabled by us
       if (license.suspended !== null && license.suspended.length > 0) {
         Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'License suspended', license: license.id, data: data }, function (err, log) { })
-        return res.json({ status: false, msg: 'LICENSE_DISABLED' })
+        return res.json({ status: 'error', msg: 'LICENSE_DISABLED' })
       }
 
       // verify that the license/hosting isnt disabled by user
