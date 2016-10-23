@@ -31,6 +31,7 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
 
   JSZip.loadAsync(req.file.buffer).then(function (zip) {
     var folder = slug.substr(0, 1).toUpperCase() + slug.substr(1);
+    if (type == 'THEME') folder += '/Config'
 
     zip.folder(folder).file('config.json').async('string').then(function (config) {
       config = JSON.parse(config);
