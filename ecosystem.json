@@ -15,6 +15,7 @@
       },
       "env_production": {
         "PORT": 80,
+        "HTTPS_PORT": 443,
         "MYSQL_HOST": "localhost",
         "MYSQL_USER": "mineweb",
         "MYSQL_PWD": "mineweb42",

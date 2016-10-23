@@ -7,25 +7,27 @@ var config = {
     'sails-mongo': require('sails-mongo')
   },
   connections: {
-    'mysql': {
+    'main_sql': {
       adapter: 'sails-mysql',
       host: process.env.MYSQL_HOST,
       user: process.env.MYSQL_USER,
       password: process.env.MYSQL_PWD,
       database: process.env.MYSQL_DB
-    },
-    'mongodb': {
-      adapter: 'sails-mongo',
-      host: process.env.MONGO_HOST,
-      port: process.env.MONGO_PORT,
-      database: process.env.MONGO_DB
     }
   },
   defaults: {
     migrate: 'safe',
-    connection: 'mysql'
+    connection: 'main_sql'
   }
 };
+
+if (process.env.NODE_ENV === 'production')
+  config.connections.mongodb = {
+    adapter: 'sails-mongo',
+    host: process.env.MONGO_HOST,
+    port: process.env.MONGO_PORT,
+    database: process.env.MONGO_DB
+  }
 
 module.exports = {
   init: function (callback) {
@@ -39,7 +41,7 @@ module.exports = {
       var model = require('./models/' + name + ".js");
       model.identity = name.toLowerCase();
       if (!model.connection)
-        model.connection = 'mysql'
+        model.connection = 'main_sql'
       waterline.loadCollection(Waterline.Collection.extend(model));
     })
 
