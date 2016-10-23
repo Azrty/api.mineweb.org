@@ -4,7 +4,7 @@ var Waterline = require('waterline');
 var config = {
   adapters: {
     'sails-mysql': require('sails-mysql'),
-    'sails-elasticsearch': require('waterline-elasticsearch')
+    'sails-mongo': require('sails-mongo')
   },
   connections: {
     'mysql': {
@@ -23,12 +23,11 @@ var config = {
 
 // if we are in production mode
 if (process.env.NODE_ENV === 'production') {
-  config.connections.elasticsearch = {
-    adapter: 'sails-elasticsearch',
-    host: process.env.ELASTIC_HOST,
-    port: process.env.ELASTIC_PORT,
-    log: 'info',
-    index: 'api-log'
+  config.connections.mongodb = {
+    adapter: 'sails-mongo',
+    host: process.env.MONGO_HOST,
+    port: process.env.MONGO_PORT,
+    database: process.env.MONGO_DB
   }
 }
 

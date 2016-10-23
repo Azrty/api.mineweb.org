@@ -21,7 +21,10 @@
         "MYSQL_DB": "mineweb",
         "NODE_ENV": "production",
         "ELASTIC_HOST": "51.255.36.38",
-        "ELASTIC_PORT": 9200
+        "ELASTIC_PORT": 9200,
+        "MONGO_HOST": "51.255.36.1",
+        "MONGO_DB": "api_log",
+        "MONGO_PORT": 27017
       }
     }
   ]

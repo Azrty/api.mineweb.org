@@ -19,10 +19,10 @@
     "php-serialization": "0.0.4",
     "pmx": "^0.6.5",
     "pump": "^1.0.1",
+    "sails-mongo": "^0.12.1",
     "sails-mysql": "^0.12.2",
     "serve-favicon": "^2.3.0",
     "waterline": "^0.12.2",
-    "waterline-elasticsearch": "seabourne/waterline-elasticsearch",
     "winston": "^2.2.0",
     "winston-elasticsearch": "^0.4.0"
   }
