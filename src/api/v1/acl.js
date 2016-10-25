@@ -75,10 +75,10 @@ module.exports = function (req, res, next) {
           input_domain = input_domain.replace('www.', '');
 
         // verify that domain match
-        if (input_domain !== domain) {
+        /*if (input_domain !== domain) {
           Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'Domain doesnt match', license: license.id, data: data }, function (err, log) { })
           return res.json({ status: 'error', msg: 'INVALID_URL' });
-        }
+        }*/
       }
       else { // License installation, setup domain
         License.update({id: license.id}, {host: data.domain}).exec(function () {})
