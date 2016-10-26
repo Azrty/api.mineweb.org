@@ -76,6 +76,10 @@ module.exports = function (req, res, next) {
 
         // verify that domain match
         if (input_domain !== domain) {
+          data.parsed = {
+            domain: domain,
+            input_domain: input_domain
+          }
           Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'Domain doesnt match', license: license.id, data: data }, function (err, log) { })
           return res.json({ status: 'error', msg: 'INVALID_URL' });
         }
