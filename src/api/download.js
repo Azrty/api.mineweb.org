@@ -39,7 +39,7 @@ module.exports = {
           })
 
           // stream zip contnet to response
-          zip.generateNodeStream({ streamFiles: true, compression: 'DEFLATE' }).pipe(res).on('finish', res.send);
+          zip.generateNodeStream({ streamFiles: true, compression: 'DEFLATE' }).pipe(res).on('finish', res.end);
         })
       })
     });
@@ -72,7 +72,7 @@ module.exports = {
           });
 
           // stream the file to the response
-          pump(stream, res);
+          pump(stream, res, res.end);
         })
 
 
@@ -124,7 +124,7 @@ module.exports = {
           });
 
           // stream the file to the response
-          pump(stream, res);
+          pump(stream, res, res.end);
         })
 
 
