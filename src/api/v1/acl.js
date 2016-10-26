@@ -68,9 +68,9 @@ module.exports = function (req, res, next) {
           domain = 'http://' + domain + ".craftwb.fr";
         else if (license.hosting && license.hosting.hostType === 'DOMAIN')
           domain = 'http://' + domain;
-        else if (domain.indexOf('www.') !== -1)
-          domain = domain.replace('www.', '');
 
+        if (domain.indexOf('www.') !== -1)
+          domain = domain.replace('www.', '');
         if (input_domain.indexOf('www.') !== -1)
           input_domain = input_domain.replace('www.', '');
 
