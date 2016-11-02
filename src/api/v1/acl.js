@@ -50,7 +50,7 @@ module.exports = function (req, res, next) {
       }
 
       // verify that the input domain is a valid one
-      if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false) {
+      if (/(https?:\/\/(?:www\.|(?!www))[^\s\.]+\.[^\s]{2,}|www\.[^\s]+\.[^\s]{2,})/.test(data.domain) === false && /^(http:\/\/|https:\/\/)localhost(|:[0-9]*)(|\/)$/g.test(data.domain) === false) {
         Apilog.create({ action: path, api_version: 1, ip: req.ip, status: false, error: 'Not a valid domain', license: license.id, data: data }, function (err, log) { })
         return res.json({ status: 'error', msg: 'INVALID_URL' })
       }
