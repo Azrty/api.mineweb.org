@@ -25,5 +25,17 @@
     "waterline": "^0.12.2",
     "winston": "^2.2.0",
     "winston-elasticsearch": "^0.4.0"
+  },
+  "deploy" : {
+    "production" : {
+      "user" : "mineweb",
+      "host" : "51.255.36.8",
+      "ref"  : "origin/master",
+      "key"  : "~/.ssh/id_rsa",
+      "passphrase": true,
+      "repo" : "git@github.com:vmarchaud/api.mineweb.org.git",
+      "path" : "/home/mineweb/api/",
+      "post-deploy" : "npm install && git submodule update --init && pm2 startOrReload ecosystem.json --env production"
+    }
   }
 }
