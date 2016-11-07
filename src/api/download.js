@@ -2,6 +2,7 @@ var fs = require('fs');
 var path = require('path');
 var pump = require('pump');
 var JSZip = require('jszip');
+var pmx   = require('pmx');
 
 // simple function to return the exact path of a file
 var getFilePath = function (name) {
@@ -75,10 +76,9 @@ module.exports = {
           pump(stream, res, res.end);
         })
 
-
         // add a download to the plugin
-        plugin.downloads = plugin.downloads + 1;
-        plugin.save(function (err) { });
+        plugin.downloads = typeof(plugin.downloads) === 'number' ? plugin.downloads + 1 : 1;
+        plugin.save(console.error);
       }
 
       // if the plugin is paid, verify that he paid it
@@ -127,10 +127,9 @@ module.exports = {
           pump(stream, res, res.end);
         })
 
-
         // add a download to the theme
-        theme.downloads = theme.downloads + 1;
-        theme.save(function (err) { });
+        theme.downloads = typeof(theme.downloads) === 'number' ? theme.downloads + 1 : 1;
+        theme.save(console.error);
       }
 
       // if the theme is paid, verify that he paid it
