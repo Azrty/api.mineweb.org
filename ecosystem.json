@@ -5,6 +5,8 @@
       "script": "src/app.js",
       "exec_mode": "cluster",
       "instances": 1,
+      "updateEnv": true,
+      "wait_ready": true,
       "env": {
         "PORT": 3000,
         "MYSQL_HOST": "status.hardfight.fr",

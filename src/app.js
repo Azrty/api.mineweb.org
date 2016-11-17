@@ -112,10 +112,18 @@ var onReady = function (err, waterline) {
 
   // when the http server is ready, tell pm2 its good
   http_server.on('listening', function () {
-    console.log("HTTP API is ready to handle request");
+    // graceful start
     process.send('ready');
+    console.log("HTTP API is ready to handle request");
   });
 }
 
 // when the orm is ready, start everything
 orm.init(onReady.bind(this));
+
+// graceful stop
+process.on('SIGINT', function() {
+  http_server.close(function () {
+    process.exit(0);
+  })
+});
