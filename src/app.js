@@ -116,14 +116,14 @@ var onReady = function (err, waterline) {
     process.send('ready');
     console.log("HTTP API is ready to handle request");
   });
+
+  // graceful stop
+  process.on('SIGINT', function() {
+    http_server.close(function () {
+      process.exit(0);
+    })
+  });
 }
 
 // when the orm is ready, start everything
 orm.init(onReady.bind(this));
-
-// graceful stop
-process.on('SIGINT', function() {
-  http_server.close(function () {
-    process.exit(0);
-  })
-});

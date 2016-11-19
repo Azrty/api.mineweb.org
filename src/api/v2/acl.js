@@ -7,15 +7,15 @@ var RSAkeyAPI = new NodeRSA(private_key, 'private');
 
 module.exports = function (req, res, next) {
   // verify that the request contains the signed field
-  if (req.body.signed === undefined) {
+  if (req.body === undefined) {
     return res.status(400).json({ status: 'error', msg: 'Invalid request' });
   }
 
   // try to decrypt the post data using RSA private key and parse it to json
   try {
     req.body = JSON.parse(RSAkeyAPI.decrypt(req.body));
-  } catch (exception) {
-    return res.status(400).json({ status: 'error', msg: 'Could not decrypt signed content' })
+  } catch (err) {
+    return res.status(400).json({ status: 'error', msg: 'Could not decrypt signed content : ' + err.message || err })
   }
 
   // verify that it contain all the info we need
