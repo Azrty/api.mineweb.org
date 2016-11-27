@@ -38,10 +38,10 @@ router.get('/plugin/all', pluginRoutes.getAllPlugins)
 router.post('/plugin/purchased', ensurePostReq, pluginRoutes.getPurchasedPlugins)
 
 /** Used to verify that the license used is valid */
-router.post('/verification', ensurePostReq, function (req, res) {
+router.post('/authentication', ensurePostReq, function (req, res) {
   var data = { time: Math.floor(new Date().getTime() / 1000), domain: req.domain };
   try {
-    var encoded = RSAkeyAPI.encrypt(data, 'base64');
+    var encoded = RSAkeyAPI.encryptPrivate(JSON.stringify(data), 'base64');
   } catch (exception) {
     return res.status(500).json({ status: 'error', msg: exception.message })
   }
@@ -63,7 +63,7 @@ router.post('/key', ensurePostReq, function (req, res) {
 
   // encrypt and send the key
   try {
-    var encoded = RSAkeyAPI.encrypt(req.license.secretKey, 'base64');
+    var encoded = RSAkeyAPI.encryptPrivate(req.license.secretKey, 'base64');
   } catch (exception) {
     return res.status(500).json({ status: 'error', error: exception.message })
   }
@@ -107,7 +107,7 @@ router.post('/ticket/add', ensurePostReq, function (req, res) {
 })
 
 /** Useless route but can be call so just send empty array */
-router.get('/getCustomMessage', function (req, res) {
+router.post('/getCustomMessage', function (req, res) {
   return res.status(200).json([]);
 })
 
