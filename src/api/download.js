@@ -83,8 +83,8 @@ module.exports = {
 
       // if the plugin is paid, verify that he paid it
       if (plugin.price > 0)
-        Purchase.findOne({ user: req.user.id, type: 'PLUGIN', itemId: pluginID })
-          .exec(function (err, purchase) {
+        Purchase.query('SELECT purchase.id FROM purchase INNER JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'PLUGIN\' AND purchase.itemId = ? AND paypalhistory.state = \'COMPLETED\'', [req.user.id, pluginID],
+          function (err, purchase) {
             // dont buyed it, go fuck yourself
             if (err || !purchase)
               return res.json({ status: 'error', msg: 'PLUGIN_NOT_FREE' });
@@ -134,8 +134,8 @@ module.exports = {
 
       // if the theme is paid, verify that he paid it
       if (theme.price > 0)
-        Purchase.findOne({ user: req.user.id, type: 'THEME', itemId: themeID })
-          .exec(function (err, purchase) {
+        Purchase.query('SELECT purchase.id FROM purchase INNER JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'THEME\' AND purchase.itemId = ? AND paypalhistory.state = \'COMPLETED\'', [req.user.id, themeID],
+          function (err, purchase) {
             // dont buyed it, go fuck yourself
             if (err || !purchase)
               return res.json({ status: 'error', msg: 'THEME_NOT_FREE' });
