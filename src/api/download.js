@@ -86,7 +86,7 @@ module.exports = {
         Purchase.query('SELECT purchase.id FROM purchase INNER JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'PLUGIN\' AND purchase.itemId = ? AND paypalhistory.state = \'COMPLETED\'', [req.user.id, pluginID],
           function (err, purchase) {
             // dont buyed it, go fuck yourself
-            if (err || !purchase)
+            if (err || !purchase || purchase.length === 0)
               return res.json({ status: 'error', msg: 'PLUGIN_NOT_FREE' });
             else
               trigger_download();
@@ -137,7 +137,7 @@ module.exports = {
         Purchase.query('SELECT purchase.id FROM purchase INNER JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'THEME\' AND purchase.itemId = ? AND paypalhistory.state = \'COMPLETED\'', [req.user.id, themeID],
           function (err, purchase) {
             // dont buyed it, go fuck yourself
-            if (err || !purchase)
+            if (err || !purchase || purchase.length === 0)
               return res.json({ status: 'error', msg: 'THEME_NOT_FREE' });
             else
               trigger_download();
