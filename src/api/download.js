@@ -83,7 +83,7 @@ module.exports = {
 
       // if the plugin is paid, verify that he paid it
       if (plugin.price > 0)
-        Purchase.query('SELECT purchase.id FROM purchase INNER JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'PLUGIN\' AND purchase.itemId = ? AND paypalhistory.state = \'COMPLETED\'', [req.user.id, pluginID],
+        Purchase.query('SELECT purchase.id FROM purchase LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'PLUGIN\' AND purchase.itemId = ? AND (paypalhistory.state = \'COMPLETED\' OR purchase.paymentType != \'PAYPAL\')', [req.user.id, pluginID],
           function (err, purchase) {
             // dont buyed it, go fuck yourself
             if (err || !purchase || purchase.length === 0)
@@ -134,7 +134,7 @@ module.exports = {
 
       // if the theme is paid, verify that he paid it
       if (theme.price > 0)
-        Purchase.query('SELECT purchase.id FROM purchase INNER JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'THEME\' AND purchase.itemId = ? AND paypalhistory.state = \'COMPLETED\'', [req.user.id, themeID],
+        Purchase.query('SELECT purchase.id FROM purchase LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'THEME\' AND purchase.itemId = ? AND (paypalhistory.state = \'COMPLETED\' OR purchase.paymentType != \'PAYPAL\')', [req.user.id, themeID],
           function (err, purchase) {
             // dont buyed it, go fuck yourself
             if (err || !purchase || purchase.length === 0)
