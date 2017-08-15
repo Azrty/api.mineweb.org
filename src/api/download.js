@@ -82,7 +82,7 @@ module.exports = {
       }
 
       // if the plugin is paid, verify that he paid it
-      if (plugin.price > 0 && req.license.id != 1020)
+      if (plugin.price > 0 && req.license.id != 1020 && req.user.id != plugin.author)
         Purchase.query('SELECT purchase.id FROM purchase LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'PLUGIN\' AND purchase.itemId = ? AND (paypalhistory.state = \'COMPLETED\' OR purchase.paymentType != \'PAYPAL\')', [req.user.id, pluginID],
           function (err, purchase) {
             // dont buyed it, go fuck yourself
@@ -133,7 +133,7 @@ module.exports = {
       }
 
       // if the theme is paid, verify that he paid it
-      if (theme.price > 0 && req.license.id != 1020)
+      if (theme.price > 0 && req.license.id != 1020 && req.user.id != theme.author)
         Purchase.query('SELECT purchase.id FROM purchase LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'THEME\' AND purchase.itemId = ? AND (paypalhistory.state = \'COMPLETED\' OR purchase.paymentType != \'PAYPAL\')', [req.user.id, themeID],
           function (err, purchase) {
             // dont buyed it, go fuck yourself
