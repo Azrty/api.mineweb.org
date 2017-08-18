@@ -17,9 +17,7 @@ var expressLog = require('express-winston');
 var app = express();
 
 var TRANSPORTS = []
-if (process.env.NODE_ENV !== 'production') {
-  TRANSPORTS.push(new winston.transports.Console({ json: true, colorize: true }))
-}
+TRANSPORTS.push(new winston.transports.Console({ json: true, colorize: true }))
 
 // enable logging of express
 app.use(expressLog.logger({
