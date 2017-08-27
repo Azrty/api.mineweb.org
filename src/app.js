@@ -2,14 +2,14 @@ var pmx = require('pmx').init({
   http          : true,
   errors        : true, 
   custom_probes : true, 
-  network       : true,
+  network       : true
 });
 
-var express = require('express')
-var path = require('path')
-var bodyParser = require('body-parser')
-var http = require('http')
-var orm = require('./db/orm.js')
+var express = require('express');
+var path = require('path');
+var bodyParser = require('body-parser');
+var http = require('http');
+var orm = require('./db/orm.js');
 
 var winston = require('winston');
 var expressLog = require('express-winston');
@@ -46,7 +46,7 @@ app.use('/api/storage/', require('./api/storage'));
 
 app.get('/', function (req, res) {
   return res.json({ api_name: "Mineweb", environement: process.env.NODE_ENV || 'development' });
-})
+});
 
 // handling 404
 app.use(function (req, res, next) {
@@ -87,6 +87,7 @@ var onReady = function (err, waterline) {
   // when the http server is ready, tell pm2 its good
   http_server.on('listening', function () {
     // graceful start
+    process.send = process.send || function () {};
     process.send('ready');
     console.log("HTTP API is ready to handle request");
   });

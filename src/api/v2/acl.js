@@ -74,16 +74,30 @@ module.exports = function (req, res, next) {
           input_domain = input_domain.replace('www.', '');
 
       // verify that domain match
-      console.log(input_domain)
-      console.log(domain)
       if (input_domain !== domain) {
         Apilog.create({ action: path, api_version: 2, ip: req.ip, status: false, error: 'Domain doesnt match', type: type.toUpperCase(), data: data }, function (err, log) { })
         return res.status(403).json({ status: false, msg: 'INVALID_URL' });
       }
     }
 
+    if (license.type === 'DEV' || license.type === 'USER_DEV') {
+        if (req.body.data.users_count >= 10)
+            return res.status(403).json({ status: false, msg: 'DEV_USERS_LIMIT_REACHED' });
+    }
+
     // its all good, log the request and pass the request to the actual route
-    Apilog.create({ action: path, api_version: 2, ip: req.ip, status: true, type: type.toUpperCase(), data: data }, function (err, log) { })
+    Apilog.create({
+        action: path,
+        api_version: 2,
+        ip: req.ip,
+        status: true,
+        type: type.toUpperCase(),
+        data: data,
+        plugins: req.body.data.plugins,
+        themes: req.body.data.themes,
+        current_theme: req.body.data.current_theme,
+        users_count: req.body.data.users_count
+    }, function (err, log) {});
     req.license = license;
     req.type = type;
     req.domain = domain || 'none';
@@ -91,4 +105,4 @@ module.exports = function (req, res, next) {
 
     return next()
   })
-}
+};

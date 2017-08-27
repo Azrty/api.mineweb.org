@@ -38,3 +38,4 @@ jspm_packages
 
 # Stored file in public folder
 src/public/
+.idea/
