@@ -39,14 +39,71 @@ router.post('/plugin/purchased', ensurePostReq, pluginRoutes.getPurchasedPlugins
 
 /** Used to verify that the license used is valid */
 router.post('/authentication', ensurePostReq, function (req, res) {
-  var data = { time: Math.floor(new Date().getTime() / 1000), domain: req.domain };
-  try {
-    var encoded = RSAkeyAPI.encryptPrivate(JSON.stringify(data), 'base64');
-  } catch (exception) {
-    return res.status(500).json({ status: 'error', msg: exception.message })
-  }
-  return res.status(200).json({ status: 'success', time: encoded })
-})
+    // dev licenses
+    if (req.license.type === 'DEV' || req.license.type === 'USER_DEV') {
+        if (req.body.data.users_count >= 10)
+            return res.status(403).json({ status: false, msg: 'DEV_USERS_LIMIT_REACHED' });
+    }
+
+    // plugins / themes
+    Purchase.find({ user: req.user.id, type: ['PLUGIN', 'THEME'] }).exec(function (err, purchases) {
+        if (err) {
+            console.error(err);
+            return res.status(500).json({status: false, msg: 'MySQL error on purchases get'});
+        }
+
+        for (var i = 0; i < purchases.length; i++) {
+            if (purchases[i].type === 'PLUGIN')
+                for (var j = 0; j < req.body.data.plugins.length; j++)
+                    if (purchases[i].itemId === req.body.data.plugins[j])
+                        req.body.data.plugins.splice(j, 1);
+            else if (purchases[i].type === 'THEME')
+                for (var j = 0; j < req.body.data.themes.length; j++)
+                    if (purchases[i].itemId === req.body.data.themes[j])
+                        req.body.data.themes.splice(j, 1);
+        }
+        // plugins/themes free
+        Plugin.find({price: 0, id: req.body.data.plugins}).exec(function (err, freePlugins) {
+            if (err) {
+                console.error(err);
+                return res.status(500).json({status: false, msg: 'MySQL error on plugins get'});
+            }
+
+            var index;
+            for (var i = 0; i < freePlugins.length; i++) {
+                if ((index = req.body.data.plugins.indexOf(freePlugins[i].id)) > -1)
+                    req.body.data.plugins.splice(index, 1);
+            }
+
+            Theme.find({price: 0, id: req.body.data.themes}).exec(function (err, freeThemes) {
+                if (err) {
+                    console.error(err);
+                    return res.status(500).json({status: false, msg: 'MySQL error on themes get'});
+                }
+
+                var index;
+                for (var i = 0; i < freeThemes.length; i++) {
+                    if ((index = req.body.data.themes.indexOf(freeThemes[i].id)) > -1)
+                        req.body.data.themes.splice(index, 1);
+                }
+
+                var data = {
+                    time: Math.floor(new Date().getTime() / 1000),
+                    domain: req.domain,
+                    plugins: req.body.data.plugins,
+                    themes: req.body.data.themes,
+                    type: (req.license.type === 'DEV' || req.license.type === 'USER_DEV') ? 'DEV' : 'BASIC'
+                };
+                try {
+                    var encoded = RSAkeyAPI.encryptPrivate(JSON.stringify(data), 'base64');
+                } catch (exception) {
+                    return res.status(500).json({status: 'error', msg: exception.message})
+                }
+                return res.status(200).json({status: 'success', time: encoded});
+            });
+        });
+    });
+});
 
 /** Used to get the secret key to communicate between the CMS and the minecraft plugin  */
 router.post('/key', ensurePostReq, function (req, res) {
@@ -112,7 +169,7 @@ router.post('/getCustomMessage', function (req, res) {
 })
 
 /** Useless route but can be call so just send empty array */
-router.get('/getFAQ', function (req, res) {
+router.get('/getFAQ/:lang*?', function (req, res) {
   var lang = req.params.lang;
   if (!lang)
     return res.json([]);

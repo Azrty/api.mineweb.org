@@ -80,24 +80,22 @@ module.exports = function (req, res, next) {
       }
     }
 
-    if (license.type === 'DEV' || license.type === 'USER_DEV') {
-        if (req.body.data.users_count >= 10)
-            return res.status(403).json({ status: false, msg: 'DEV_USERS_LIMIT_REACHED' });
-    }
-
     // its all good, log the request and pass the request to the actual route
-    Apilog.create({
-        action: path,
-        api_version: 2,
-        ip: req.ip,
-        status: true,
-        type: type.toUpperCase(),
-        data: data,
-        plugins: req.body.data.plugins,
-        themes: req.body.data.themes,
-        current_theme: req.body.data.current_theme,
-        users_count: req.body.data.users_count
-    }, function (err, log) {});
+    var log = {
+      action: path,
+      api_version: 2,
+      ip: req.ip,
+      status: true,
+      type: type.toUpperCase(),
+      data: data
+    };
+    if (req.url === '/authentification') {
+        log['plugins'] = req.body.data.plugins;
+        log['themes'] = req.body.data.themes;
+        log['current_theme'] = req.body.data.current_theme;
+        log['users_count'] = req.body.data.users_count;
+    }
+    Apilog.create(log, function (err, log) {});
     req.license = license;
     req.type = type;
     req.domain = domain || 'none';
