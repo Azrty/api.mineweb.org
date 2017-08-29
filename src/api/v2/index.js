@@ -4,7 +4,6 @@ var fs = require('fs');
 var path = require('path');
 var NodeRSA = require('node-rsa');
 var multer = require('multer');
-var crypto = require('crypto');
 
 var private_key = fs.readFileSync(path.resolve(__dirname, '../../secret/private.key'));
 var RSAkeyAPI = new NodeRSA(private_key, 'private');
@@ -202,49 +201,22 @@ var upload = multer({
     },
     limit: { fileSize: 5000000 }
 });
+var encryptSecure = require('./encrypt_secure');
 
-router.post('/:type/security/generate/:apiID', upload.single('file'), function (req, res) {
+router.post('/:type/security/generate', upload.single('file'), function (req, res) {
     if (req.ip.indexOf("51.255.36.20") === -1 && process.env.NODE_ENV !== 'development')
         return res.sendStatus(404);
-    if (req.params === undefined || req.params.apiID === undefined)
+    if (req.body === undefined || req.body.slug === undefined || req.body.slug.length === 0)
         return res.sendStatus(400);
-    var model = req.params.type == 'plugin' ? Plugin : Theme;
     var fct = req.params.type == 'plugin' ? pluginRoutes : themeRoutes;
 
-    model.findOne({id: req.params.apiID}).exec(function (err, data) {
-        if (err || data === undefined || data.length === 0) {
-            if (err)
-                console.error(err);
-            return res.status((err) ? 500 : 404).json({status: false, error: 'Unable to find extension.'});
-        }
-
-        fct.generateSecure(data, req.file.buffer, function (err, secure) {
-            // SECURE
-            var password = '0123456789ABCDEF';
-            var iv = '1234567890123456';
-            var cipher = crypto.createCipheriv('aes-128-cbc', password, iv);
-
-            var crypted = cipher.update(JSON.stringify(secure), 'utf8', 'binary');
-            crypted += cipher.final('binary');
-            var hexVal = new Buffer(crypted, 'binary');
-            crypted = hexVal.toString('hex');
-
-            // INFOS
-            if (err)
-                return res.status(500).json({status: false, error: err});
-            try {
-                var cryptedPassword = RSAkeyAPI.encryptPrivate(JSON.stringify({pwd: password, iv: iv}), 'base64');
-            } catch (exception) {
-                return res.status(500).json({status: false, error: exception.message})
-            }
-
-            // DATA
-            var encoded = [
-                cryptedPassword,
-                crypted
-            ];
-            return res.json({status: true, success: JSON.stringify(encoded)});
-        });
+    fct.generateSecure({slug: req.body.slug}, req.file.buffer, function (err, secure) {
+        if (err)
+            return res.status(500).json({status: false, error: err});
+        secure = encryptSecure(secure);
+        if (!secure)
+            return res.status(500).json({status: false, error: 'Unable to crypt infos.'});
+        return res.json({status: true, success: JSON.stringify(secure)});
     });
 });
 
