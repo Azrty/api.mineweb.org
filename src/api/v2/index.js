@@ -3,6 +3,8 @@ var router = express.Router();
 var fs = require('fs');
 var path = require('path');
 var NodeRSA = require('node-rsa');
+var multer = require('multer');
+var crypto = require('crypto');
 
 var private_key = fs.readFileSync(path.resolve(__dirname, '../../secret/private.key'));
 var RSAkeyAPI = new NodeRSA(private_key, 'private');
@@ -46,22 +48,30 @@ router.post('/authentication', ensurePostReq, function (req, res) {
     }
 
     // plugins / themes
-    Purchase.find({ user: req.user.id, type: ['PLUGIN', 'THEME'] }).exec(function (err, purchases) {
+    Purchase.query('SELECT * FROM purchase ' +
+        'LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id ' +
+        'WHERE purchase.user = ? ' +
+        'AND (purchase.type = \'PLUGIN\' OR purchase.type = \'THEME\') ' +
+        'AND (purchase.paymentType != \'PAYPAL\' OR paypalhistory.state = \'COMPLETED\')', [req.user.id], function (err, purchases) {
         if (err) {
             console.error(err);
             return res.status(500).json({status: false, msg: 'MySQL error on purchases get'});
         }
 
         for (var i = 0; i < purchases.length; i++) {
-            if (purchases[i].type === 'PLUGIN')
-                for (var j = 0; j < req.body.data.plugins.length; j++)
+            if (purchases[i].type === 'PLUGIN') {
+                for (var j = 0; j < req.body.data.plugins.length; j++) {
                     if (purchases[i].itemId === req.body.data.plugins[j])
                         req.body.data.plugins.splice(j, 1);
-            else if (purchases[i].type === 'THEME')
-                for (var j = 0; j < req.body.data.themes.length; j++)
+                }
+            } else if (purchases[i].type === 'THEME') {
+                for (var j = 0; j < req.body.data.themes.length; j++) {
                     if (purchases[i].itemId === req.body.data.themes[j])
                         req.body.data.themes.splice(j, 1);
+                }
+            }
         }
+
         // plugins/themes free
         Plugin.find({price: 0, id: req.body.data.plugins}).exec(function (err, freePlugins) {
             if (err) {
@@ -125,7 +135,7 @@ router.post('/key', ensurePostReq, function (req, res) {
     return res.status(500).json({ status: 'error', error: exception.message })
   }
   return res.status(200).json({ status: 'success', secret_key: encoded })
-})
+});
 
 /** Used to create a ticket from CMS  */
 router.post('/ticket/add', ensurePostReq, function (req, res) {
@@ -161,12 +171,12 @@ router.post('/ticket/add', ensurePostReq, function (req, res) {
     })
   })
 
-})
+});
 
 /** Useless route but can be call so just send empty array */
 router.post('/getCustomMessage', function (req, res) {
   return res.status(200).json([]);
-})
+});
 
 /** Useless route but can be call so just send empty array */
 router.get('/getFAQ/:lang*?', function (req, res) {
@@ -179,7 +189,64 @@ router.get('/getFAQ/:lang*?', function (req, res) {
 
     return res.json(questions);
   })
-})
+});
+
+var upload = multer({
+    storage: multer.memoryStorage(),
+    fileFilter: function (req, file, cb) {
+        // accept only zip file
+        if (file.mimetype !== 'application/zip')
+            cb(null, false)
+        else
+            cb(null, true)
+    },
+    limit: { fileSize: 5000000 }
+});
+
+router.post('/:type/security/generate/:apiID', upload.single('file'), function (req, res) {
+    if (req.ip.indexOf("51.255.36.20") === -1 && process.env.NODE_ENV !== 'development')
+        return res.sendStatus(404);
+    if (req.params === undefined || req.params.apiID === undefined)
+        return res.sendStatus(400);
+    var model = req.params.type == 'plugin' ? Plugin : Theme;
+    var fct = req.params.type == 'plugin' ? pluginRoutes : themeRoutes;
+
+    model.findOne({id: req.params.apiID}).exec(function (err, data) {
+        if (err || data === undefined || data.length === 0) {
+            if (err)
+                console.error(err);
+            return res.status((err) ? 500 : 404).json({status: false, error: 'Unable to find extension.'});
+        }
+
+        fct.generateSecure(data, req.file.buffer, function (err, secure) {
+            // SECURE
+            var password = '0123456789ABCDEF';
+            var iv = '1234567890123456';
+            var cipher = crypto.createCipheriv('aes-128-cbc', password, iv);
+
+            var crypted = cipher.update(JSON.stringify(secure), 'utf8', 'binary');
+            crypted += cipher.final('binary');
+            var hexVal = new Buffer(crypted, 'binary');
+            crypted = hexVal.toString('hex');
+
+            // INFOS
+            if (err)
+                return res.status(500).json({status: false, error: err});
+            try {
+                var cryptedPassword = RSAkeyAPI.encryptPrivate(JSON.stringify({pwd: password, iv: iv}), 'base64');
+            } catch (exception) {
+                return res.status(500).json({status: false, error: exception.message})
+            }
+
+            // DATA
+            var encoded = [
+                cryptedPassword,
+                crypted
+            ];
+            return res.json({status: true, success: JSON.stringify(encoded)});
+        });
+    });
+});
 
 // register routes here
 module.exports = router;

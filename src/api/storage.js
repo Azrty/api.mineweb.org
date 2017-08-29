@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-var multer = require('multer')
+var multer = require('multer');
 var path = require('path');
 var JSZip = require("jszip");
 var pump = require('pump');
@@ -18,7 +18,7 @@ var upload = multer({
       cb(null, true)
   },
   limit: { fileSize: 5000000 }
-})
+});
 
 // handle upload call
 router.post('/upload', upload.single('file'), function (req, res, next) {
@@ -26,7 +26,7 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
 
   var type = req.body.type, version = req.body.version, slug = req.body.slug, id = req.body.id;
 
-  if (!type || !version || !slug | !id)
+  if (!type || !version || !slug || !id)
     return res.sendStatus(400);
 
   JSZip.loadAsync(req.file.buffer).then(function (zip) {
