@@ -43,27 +43,37 @@ module.exports = {
 
   /** Get all purchased plugins by user**/
   getPurchasedPlugins: function (req, res) {
-      Purchase.query('SELECT * FROM purchase ' +
-          'LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id ' +
-          'WHERE purchase.user = ? ' +
-          'AND purchase.type = \'PLUGIN\' ' +
-          'AND (purchase.paymentType != \'PAYPAL\' OR paypalhistory.state = \'COMPLETED\')', [req.user.id], function (err, purchases) {
-      if (err || purchases === undefined || purchases.length === 0)
-        return res.json([]);
+      if (req.license.type === 'DEV') {
+          Plugin.find({ state: 'CONFIRMED', price: {'>': 0} }).populate('author').exec(function (err, plugins) {
+              if (err || plugins === undefined || plugins.length === 0)
+                  return res.json([]);
+              else
+                  return res.json({ status: 'success', success: transform(plugins) });
+          })
+      } else {
+          Purchase.query('SELECT * FROM purchase ' +
+              'LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id ' +
+              'WHERE purchase.user = ? ' +
+              'AND purchase.type = \'PLUGIN\' ' +
+              'AND (purchase.paymentType != \'PAYPAL\' OR paypalhistory.state = \'COMPLETED\')', [req.user.id],
+          function (err, purchases) {
+              if (err || purchases === undefined || purchases.length === 0)
+                  return res.json([]);
 
-      // get an array of plugin id
-      var plugin_ids = purchases.map(function (item) {
-        return item.itemId;
-      });
+              // get an array of plugin id
+              var plugin_ids = purchases.map(function (item) {
+                  return item.itemId;
+              });
 
-      // query all of them
-      Plugin.find({ id: plugin_ids, state: 'CONFIRMED' }).populate('author').exec(function (err, plugins) {
-        if (err || plugins === undefined || plugins.length === 0)
-          return res.json([]);
-        else
-          return res.json({ status: 'success', success: transform(plugins) });
-      })
-    })
+              // query all of them
+              Plugin.find({id: plugin_ids, state: 'CONFIRMED'}).populate('author').exec(function (err, plugins) {
+                  if (err || plugins === undefined || plugins.length === 0)
+                      return res.json([]);
+                  else
+                      return res.json({status: 'success', success: transform(plugins)});
+              })
+          })
+      }
   },
 
   /** Generate secure from archive (.zip) **/
