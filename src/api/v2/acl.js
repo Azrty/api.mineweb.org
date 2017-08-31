@@ -32,7 +32,7 @@ module.exports = function (req, res, next) {
       return res.status(404).json({ status: false, msg: 'ID_OR_KEY_INVALID' })
     }
 
-    var type = license.hosting !== null ? 'license' : 'hosting';
+    var type = license.hosting === null ? 'license' : 'hosting';
 
     // verify that license hasnt been disabled by us
     if (license.suspended !== null && license.suspended.length > 0) {
@@ -89,7 +89,7 @@ module.exports = function (req, res, next) {
       type: type.toUpperCase(),
       data: data
     };
-    if (req.url === '/authentification') {
+    if (path === '/authentication') {
         log['plugins'] = req.body.data.plugins;
         log['themes'] = req.body.data.themes;
         log['current_theme'] = req.body.data.current_theme;
