@@ -101,7 +101,6 @@ module.exports = {
                   routesFile = routesFile.split(';');
                   for (var i = 0; i < routesFile.length; i++) {
                       regex = /Router::connect\('([A-Za-z/*_-]+)',( |)(array\(|\[)(.*|)'controller'( |)=>( |)'([A-Za-z_-]+)',(.*|)'action'( |)=>( |)'([A-Za-z_-]+)'(.*)(\)|\])\)/g;
-                      console.log('Check for: ', routesFile[i]);
                       if ((matches = regex.exec(routesFile[i])) === undefined || matches === null || matches.length === 0)
                           continue;
                       routes[matches[1]] = {
