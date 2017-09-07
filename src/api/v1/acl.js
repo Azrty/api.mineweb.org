@@ -17,8 +17,10 @@ module.exports = function (req, res, next) {
 
     // try to decrypt the post data using RSA private key and parse it to json
     try {
-      var data = JSON.parse(RSAkeyAPI.decrypt(Buffer.from(fields['0'][0], 'base64')));
+      var json = RSAkeyAPI.decrypt(Buffer.from(fields['0'][0], 'base64'));
+      var data = JSON.parse(json);
     } catch (exception) {
+      console.error(exception, json, req.body)
       return res.status(400).json({ status: 'error', msg: exception.message })
     }
 
