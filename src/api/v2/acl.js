@@ -135,7 +135,8 @@ module.exports = function (req, res, next) {
             ip: req.ip,
             status: true,
             type: type.toUpperCase(),
-            data: data
+            data: data,
+            license: license.id
         };
         if (path === '/authentication') {
             log['plugins'] = req.body.data.plugins;
