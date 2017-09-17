@@ -153,15 +153,12 @@ router.post('/ticket/add', ensurePostReq, function (req, res) {
   // log data put by the cms
   Apilog.create({ action: 'DEBUG', ip: req.ip, api_version: 2, status: true, type: req.type.toUpperCase(), data: data }, function (err, log) {})
 
-  // create the ticket
-  var ticket = {
-    user: req.user,
-    title: title,
-    category: 'OTHER'
-  }
-
-  ticket[req.type] = req.license;
-  Ticket.create(ticket, function (err, ticket) {
+  Ticket.create({
+      user: req.user,
+      title: title,
+      category: 'OTHER',
+      license: req.license.id
+  }, function (err, ticket) {
     if (err) return res.status(500).json({ status: 'error', error: err.message })
 
     // create the actual message for the ticket
