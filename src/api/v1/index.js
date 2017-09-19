@@ -122,7 +122,7 @@ router.post('/addTicket', ensurePostReq, function (req, res) {
 router.post('/getCustomMessage', ensurePostReq, function (req, res) {
   return res.json({
       type: 1,
-      messageHTML: '<div class="alert alert-info"><b>Mise à jour:</b> Pour une meilleure expérience lors de la prochaine mise à jour, veuillez nous aider ne répondant au <a href="http://www.strawpoll.me/13966055">sondage</a>.</div>'
+      messageHTML: '<div class="alert alert-info"><b>Mise à jour:</b> Pour une meilleure expérience lors de la prochaine mise à jour, veuillez nous aider en répondant au <a href="http://www.strawpoll.me/13966055">sondage</a>.</div>'
   });
 })
 
