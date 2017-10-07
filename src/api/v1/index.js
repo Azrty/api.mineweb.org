@@ -122,7 +122,7 @@ router.post('/addTicket', ensurePostReq, function (req, res) {
 router.post('/getCustomMessage', ensurePostReq, function (req, res) {
   return res.json({
       type: 1,
-      messageHTML: '<div class="alert alert-info"><b>Mise à jour:</b> Pour une meilleure expérience lors de la prochaine mise à jour, veuillez nous aider en répondant au <a href="http://www.strawpoll.me/13966055">sondage</a>.</div>'
+      messageHTML: '<div class="alert alert-warning"><b>Mise à jour:</b> Une mise à jour importante sortira Mardi 10 Octobre à 16h, celle-ci modifie le comportement des plugins et des thèmes (changements <a href="https://mineweb.org/versions">ici</a>).<b>VOUS DEVREZ IMPÉRATIVEMENT METTRE À JOUR VOS PLUGINS ET THEMES POUR QUE CEUX-CI FONCTIONNENT SUR LA MISE À JOUR <em>même les plugins et thèmes personnalisés (cf. la documentation qui sera mise à jour lundi 9 octobre a 16h)</em>.</b></div><div class="alert alert-warning"><b>Mise à jour:</b> Vous devrez refaire la liaison site-serveur avec un nouveau plugin si vous mettez à jour le CMS.</div>'
   });
 })
 
