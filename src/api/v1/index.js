@@ -32,6 +32,7 @@ router.get('/get_update*', function (req, res) {
 
 /** Route linked to download */
 router.post('/update', ensurePostReq, downloadRoutes.get_cms)
+router.post('/cms/update', ensurePostReq, downloadRoutes.get_cms)
 router.post('/get_theme/:apiID', ensurePostReq, downloadRoutes.get_theme)
 router.post('/get_plugin/:apiID', ensurePostReq, downloadRoutes.get_plugin)
 
