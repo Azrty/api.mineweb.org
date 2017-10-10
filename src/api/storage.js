@@ -63,7 +63,7 @@ router.post('/upload', upload.single('file'), function (req, res, next) {
                         .on('finish', function () {
                             res.send()
                         });
-                })
+                }, config.apiID)
             });
         })
     })

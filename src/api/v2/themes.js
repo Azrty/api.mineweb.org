@@ -76,7 +76,7 @@ module.exports = {
     },
 
     /** Generate secure from archive (.zip) **/
-    generateSecure: function (theme, file, next) {
+    generateSecure: function (theme, file, next, apiID) {
         var secure = {
             configuration: {},
             routes: {},
@@ -94,6 +94,8 @@ module.exports = {
                 for (key in config.configurations)
                     secure.options.push(key);
                 delete config['configurations'];
+                if (apiID !== undefined)
+                    config.apiID = apiID
                 secure.configuration = config;
 
                 // Files
