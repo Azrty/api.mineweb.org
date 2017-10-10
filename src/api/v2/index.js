@@ -14,7 +14,7 @@ var downloadRoutes = require('../download')
 var ensurePostReq = require('./acl.js');
 
 /** Get the latest release of the cms  */
-router.get('/cms/versiosn', function (req, res) {
+router.get('/cms/version', function (req, res) {
   Version.findOne({ state: 'RELEASE' }).sort('id DESC').exec(function (err, version) {
     if (err || !version)
       return res.status(500).json({ status: false, error: 'Not Found' });
