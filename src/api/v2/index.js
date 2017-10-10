@@ -97,14 +97,14 @@ router.post('/authentication', ensurePostReq, function (req, res) {
                 }
 
                 // Remove apiID with -1
-                for (var i = 0; i < req.body.data.themes.length; i++) {
+               /* for (var i = 0; i < req.body.data.themes.length; i++) {
                     if (req.body.data.themes[i] === -1)
                         req.body.data.themes.splice(i, 1);
                 }
                 for (var i = 0; i < req.body.data.plugins.length; i++) {
                     if (req.body.data.plugins[i] === -1)
                         req.body.data.plugins.splice(i, 1);
-                }
+                }*/s
 
                 var data = {
                     time: Math.floor(new Date().getTime() / 1000),
