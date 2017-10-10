@@ -77,7 +77,7 @@ module.exports = {
   },
 
   /** Generate secure from archive (.zip) **/
-  generateSecure: function (plugin, file, next) {
+  generateSecure: function (plugin, file, next, apiID) {
       var secure = {
           configuration: {},
           routes: {},
@@ -91,6 +91,8 @@ module.exports = {
           // Configuration
           zipFolder.file('config.json').async('string').then(function (config) {
               config = JSON.parse(config);
+              if (apiID !== undefined)
+                  config.apiID = apiID
               secure.configuration = config;
 
               // Routes
