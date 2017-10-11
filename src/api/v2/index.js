@@ -72,7 +72,8 @@ router.post('/authentication', ensurePostReq, function (req, res) {
         }
 
         // plugins/themes free
-        Plugin.find({id: req.body.data.plugin, or: [{price: 0}, {author: req.user.id}]}).exec(function (err, freePlugins) {
+        //Plugin.find({id: req.body.data.plugin, or: [{price: 0}, {author: req.user.id}]}).exec(function (err, freePlugins) {
+        Plugin.find({id: req.body.data.plugin, price: 0}).exec(function (err, freePlugins) {
             if (err) {
                 console.error(err);
                 return res.status(500).json({status: false, msg: 'MySQL error on plugins get'});
@@ -84,7 +85,8 @@ router.post('/authentication', ensurePostReq, function (req, res) {
                     req.body.data.plugins.splice(index, 1);
             }
 
-            Theme.find({id: req.body.data.themes, or: [{price: 0}, {author: req.user.id}]}).exec(function (err, freeThemes) {
+            //Theme.find({id: req.body.data.themes, or: [{price: 0}, {author: req.user.id}]}).exec(function (err, freeThemes) {
+            Theme.find({id: req.body.data.themes, price: 0}).exec(function (err, freeThemes) {
                 if (err) {
                     console.error(err);
                     return res.status(500).json({status: false, msg: 'MySQL error on themes get'});
