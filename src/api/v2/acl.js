@@ -39,7 +39,7 @@ module.exports = function (req, res, next) {
             });
             return res.status(404).json({status: false, msg: 'ID_OR_KEY_INVALID'})
         }
-
+console.log(license.hosting)
         var type = license.hosting === null ? 'license' : 'hosting';
 
         // verify that license hasnt been disabled by us
