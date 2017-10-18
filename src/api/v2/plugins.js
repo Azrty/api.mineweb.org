@@ -43,7 +43,7 @@ module.exports = {
 
   /** Get all purchased plugins by user**/
   getPurchasedPlugins: function (req, res) {
-      if (req.license.type === 'DEV') {
+      if (req.license.type === 'DEV' || (req.license.type === 'USER_DEV' && req.user.developer === 'CONFIRMED')) {
           Plugin.find({ state: 'CONFIRMED', price: {'>': 0} }).populate('author').exec(function (err, plugins) {
               if (err || plugins === undefined || plugins.length === 0)
                   return res.json([]);
