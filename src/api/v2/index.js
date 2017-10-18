@@ -72,7 +72,10 @@ router.post('/authentication', ensurePostReq, function (req, res) {
         }
 
         // plugins/themes free
-        Plugin.find({or: [{author: req.user.id}, {price: 0}], id: req.body.data.plugins}).exec(function (err, freePlugins) {
+        var pluginsConditions = {or: [{author: req.user.id}, {price: 0}], id: req.body.data.plugins};
+        if (req.license.type === 'USER_DEV' && req.user.developer === 'CONFIRMED') // if license type is user_dev and user is developer, let him use all plugins
+            pluginsConditions = {id: req.body.data.plugins};
+        Plugin.find(pluginsConditions).exec(function (err, freePlugins) {
             if (err) {
                 console.error(err);
                 return res.status(500).json({status: false, msg: 'MySQL error on plugins get'});
