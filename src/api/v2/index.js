@@ -118,7 +118,7 @@ router.post('/authentication', ensurePostReq, function (req, res) {
                     domain: req.domain,
                     plugins: req.body.data.plugins,
                     themes: req.body.data.themes,
-                    type: (req.license.type === 'DEV' || req.license.type === 'USER_DEV') ? 'DEV' : 'BASIC'
+                    type: req.license.type
                 };
                 try {
                     var encoded = RSAkeyAPI.encryptPrivate(JSON.stringify(data), 'base64');
