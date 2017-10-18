@@ -82,7 +82,7 @@ module.exports = {
       };
 
       // if the plugin is paid, verify that he paid it
-      if (plugin.price > 0 && req.license.type !== "DEV" && req.user.id !== plugin.author)
+      if (plugin.price > 0 && req.license.type !== "DEV" && req.user.id !== plugin.author && !(req.user.developer === 'CONFIRMED' && req.license.type === 'USER_DEV'))
         Purchase.query('SELECT purchase.id FROM purchase LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id WHERE purchase.user = ? AND purchase.type = \'PLUGIN\' AND purchase.itemId = ? AND (paypalhistory.state = \'COMPLETED\' OR purchase.paymentType != \'PAYPAL\')', [req.user.id, pluginID],
           function (err, purchase) {
             // dont buyed it, go fuck yourself
