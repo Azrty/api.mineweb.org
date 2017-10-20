@@ -125,6 +125,8 @@ module.exports = function (req, res, next) {
                 });
                 return res.status(403).json({status: false, msg: 'INVALID_URL'});
             }
+        } else { // License installation, setup domain
+            License.update({id: license.id}, {host: data.domain}).exec(function () {})
         }
 
         // its all good, log the request and pass the request to the actual route
