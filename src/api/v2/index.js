@@ -47,6 +47,10 @@ router.post('/authentication', ensurePostReq, function (req, res) {
     }
 
     // plugins / themes
+    if (!req.body.data.themes)
+        req.body.data.themes = []
+    if (!req.body.data.plugins)
+        req.body.data.plugins = []
     Purchase.query('SELECT * FROM purchase ' +
         'LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id ' +
         'WHERE purchase.user = ? ' +
@@ -109,7 +113,7 @@ router.post('/authentication', ensurePostReq, function (req, res) {
                 for (var i = 0; i < req.body.data.plugins.length; i++) {
                     if (req.body.data.plugins[i] == '-1')
                         req.body.data.plugins.splice(i, 1);
-                    if (req.body.data.plugins[i] == '0s')
+                    if (req.body.data.plugins[i] == '0')
                         req.body.data.plugins.splice(i, 1);
                 }
 

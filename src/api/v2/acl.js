@@ -50,7 +50,8 @@ module.exports = function (req, res, next) {
                 status: false,
                 error: 'License suspended',
                 type: type.toUpperCase(),
-                data: data
+                data: data,
+                license: license.id
             }, function (err, log) {
             });
             return res.status(403).json({status: false, msg: 'LICENSE_DISABLED'})
@@ -65,7 +66,8 @@ module.exports = function (req, res, next) {
                 status: false,
                 error: 'License disabled by user',
                 type: type.toUpperCase(),
-                data: data
+                data: data,
+                license: license.id
             }, function (err, log) {
             });
             return res.status(403).json({status: false, msg: 'LICENSE_DISABLED'})
@@ -120,7 +122,8 @@ module.exports = function (req, res, next) {
                     status: false,
                     error: 'Domain doesnt match',
                     type: type.toUpperCase(),
-                    data: data
+                    data: data,
+                    license: license.id
                 }, function (err, log) {
                 });
                 return res.status(403).json({status: false, msg: 'INVALID_URL'});
