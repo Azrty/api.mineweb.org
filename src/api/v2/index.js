@@ -192,7 +192,10 @@ router.post('/ticket/add', ensurePostReq, function (req, res) {
 
 /** Useless route but can be call so just send empty array */
 router.post('/getCustomMessage', function (req, res) {
-  return res.status(200).json([]);
+    return res.json({
+        type: 1,
+        messageHTML: '<div class="alert alert-warning"><b>Mise à jour:</b> Un correctif important est maintenant disponible pour le plugin de liaison site-serveur sur la doc. Veuillez donc bien mettre à jour le plugin pour des raisons de sécurités.</div>'
+    });
 });
 
 /** Useless route but can be call so just send empty array */
