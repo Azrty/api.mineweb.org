@@ -47,6 +47,10 @@ router.post('/authentication', ensurePostReq, function (req, res) {
     }
 
     // plugins / themes
+    if (!req.body.data.themes)
+        req.body.data.themes = []
+    if (!req.body.data.plugins)
+        req.body.data.plugins = []
     Purchase.query('SELECT * FROM purchase ' +
         'LEFT JOIN paypalhistory ON purchase.paymentId = paypalhistory.id ' +
         'WHERE purchase.user = ? ' +
@@ -109,7 +113,7 @@ router.post('/authentication', ensurePostReq, function (req, res) {
                 for (var i = 0; i < req.body.data.plugins.length; i++) {
                     if (req.body.data.plugins[i] == '-1')
                         req.body.data.plugins.splice(i, 1);
-                    if (req.body.data.plugins[i] == '0s')
+                    if (req.body.data.plugins[i] == '0')
                         req.body.data.plugins.splice(i, 1);
                 }
 
@@ -188,7 +192,10 @@ router.post('/ticket/add', ensurePostReq, function (req, res) {
 
 /** Useless route but can be call so just send empty array */
 router.post('/getCustomMessage', function (req, res) {
-  return res.status(200).json([]);
+    return res.json({
+        type: 1,
+        messageHTML: '<div class="alert alert-warning"><b>Mise à jour:</b> Un correctif important est maintenant disponible pour le plugin de liaison site-serveur sur la doc. Veuillez donc bien mettre à jour le plugin pour des raisons de sécurités.</div>'
+    });
 });
 
 /** Useless route but can be call so just send empty array */
