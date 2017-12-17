@@ -75,7 +75,7 @@ var onReady = function (err, waterline) {
     var name = key.substr(0, 1).toUpperCase() + key.substr(1);
     global[name] = waterline.collections[key];
   })
-  ApiLog.native(function (err, collection) {
+  global.ApiLog.native(function (err, collection) {
     collection.ensureIndex( { "createdAt": 1 }, { expireAfterSeconds: 604800 } ); // 1 week
     callback();
   });
