@@ -50,10 +50,10 @@ module.exports = {
       if (err)
         callback(err, null)
 
-        waterline.collections.ApiLog.native(function (err, collection) {
-            collection.ensureIndex( { "createdAt": 1 }, { expireAfterSeconds: 604800 } ); // 1 week
+        //waterline.collections.ApiLog.native(function (err, collection) {
+          //  collection.ensureIndex( { "createdAt": 1 }, { expireAfterSeconds: 604800 } ); // 1 week
             callback(null, instance);
-        });
+        //});
     });
   }
 }
