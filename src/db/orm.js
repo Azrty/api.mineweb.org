@@ -49,11 +49,7 @@ module.exports = {
     waterline.initialize(config, function (err, instance) {
       if (err)
         callback(err, null)
-
-        ApiLog.native(function (err, collection) {
-            collection.ensureIndex( { "createdAt": 1 }, { expireAfterSeconds: 604800 } ); // 1 week
-            callback(null, instance);
-        });
+      callback(null, instance);
     });
   }
 }

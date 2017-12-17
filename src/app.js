@@ -75,29 +75,41 @@ var onReady = function (err, waterline) {
     var name = key.substr(0, 1).toUpperCase() + key.substr(1);
     global[name] = waterline.collections[key];
   })
+  if (app.get('env') !== 'development')
+  {
+      waterline.collections['apilog'].native(function (err, collection) {
+          collection.ensureIndex( { "createdAt": 1 }, { expireAfterSeconds: 604800 } ); // 1 week
+          callback();
+      });
+  }
+  else
+    callback()
 
-  // start http server
-  var http_server = http.createServer(app);
+ function callback()
+ {
+     // start http server
+     var http_server = http.createServer(app);
 
-  http_server.listen(process.env.PORT || 8080);
-  http_server.on('error', function (err) {
-    throw err;
-  });
+     http_server.listen(process.env.PORT || 8080);
+     http_server.on('error', function (err) {
+         throw err;
+     });
 
-  // when the http server is ready, tell pm2 its good
-  http_server.on('listening', function () {
-    // graceful start
-    process.send = process.send || function () {};
-    process.send('ready');
-    console.log("HTTP API is ready to handle request");
-  });
+     // when the http server is ready, tell pm2 its good
+     http_server.on('listening', function () {
+         // graceful start
+         process.send = process.send || function () {};
+         process.send('ready');
+         console.log("HTTP API is ready to handle request");
+     });
 
-  // graceful stop
-  process.on('SIGINT', function() {
-    http_server.close(function () {
-      process.exit(0);
-    })
-  });
+     // graceful stop
+     process.on('SIGINT', function() {
+         http_server.close(function () {
+             process.exit(0);
+         })
+     });
+ }
 }
 
 // when the orm is ready, start everything
