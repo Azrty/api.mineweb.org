@@ -4,7 +4,7 @@ var Waterline = require('waterline');
 var config = {
   adapters: {
     'sails-mysql': require('sails-mysql'),
-    'sails-mongo': require('sails-mongo')
+    // 'sails-mongo': require('sails-mongo')
   },
   connections: {
     'main_sql': {
@@ -21,13 +21,13 @@ var config = {
   }
 };
 
-if (process.env.NODE_ENV === 'production')
-  config.connections.mongodb = {
-    adapter: 'sails-mongo',
-    host: process.env.MONGO_HOST,
-    port: process.env.MONGO_PORT,
-    database: process.env.MONGO_DB
-  }
+// if (process.env.NODE_ENV === 'production')
+//   config.connections.mongodb = {
+//     adapter: 'sails-mongo',
+//     host: process.env.MONGO_HOST,
+//     port: process.env.MONGO_PORT,
+//     database: process.env.MONGO_DB
+//   }
 
 module.exports = {
   init: function (callback) {
